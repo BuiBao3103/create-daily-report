@@ -125,6 +125,28 @@
             margin-bottom: 12px;
         }
 
+        .custom-label-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .custom-label-btn {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .custom-label-btn:hover {
+            background: rgba(128, 128, 128, 0.1);
+            color: var(--text-primary);
+        }
+
         label {
             display: block;
             margin-bottom: 5px;
@@ -319,13 +341,29 @@
             </div>
             
             <div class="form-group">
-                <label for="yesterday">Hôm qua:</label>
-                <textarea id="yesterday" placeholder="Những việc đã làm hôm qua..."></textarea>
+                <div class="custom-label-group">
+                    <label for="yesterdayLabel">Nhãn 1:</label>
+                    <button class="custom-label-btn" onclick="resetLabel('yesterdayLabel')">Mặc định</button>
+                </div>
+                <input type="text" id="yesterdayLabel" placeholder="Nhập nhãn tùy chỉnh..." value="Hôm qua">
             </div>
             
             <div class="form-group">
-                <label for="today">Hôm nay:</label>
-                <textarea id="today" placeholder="Những việc sẽ làm hôm nay..."></textarea>
+                <label for="yesterday">Nội dung 1:</label>
+                <textarea id="yesterday" placeholder="Nội dung phần 1..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <div class="custom-label-group">
+                    <label for="todayLabel">Nhãn 2:</label>
+                    <button class="custom-label-btn" onclick="resetLabel('todayLabel')">Mặc định</button>
+                </div>
+                <input type="text" id="todayLabel" placeholder="Nhập nhãn tùy chỉnh..." value="Hôm nay">
+            </div>
+            
+            <div class="form-group">
+                <label for="today">Nội dung 2:</label>
+                <textarea id="today" placeholder="Nội dung phần 2..."></textarea>
             </div>
             
             <button class="btn-primary" onclick="generateReport()">
@@ -363,13 +401,40 @@
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("date").valueAsDate = new Date();
             updateThemeIcon();
+            
+            // Khôi phục các nhãn từ localStorage nếu có
+            const savedYesterdayLabel = localStorage.getItem('yesterdayLabel');
+            if (savedYesterdayLabel) {
+                document.getElementById("yesterdayLabel").value = savedYesterdayLabel;
+            }
+            
+            const savedTodayLabel = localStorage.getItem('todayLabel');
+            if (savedTodayLabel) {
+                document.getElementById("todayLabel").value = savedTodayLabel;
+            }
         });
+
+        function resetLabel(labelId) {
+            if (labelId === 'yesterdayLabel') {
+                document.getElementById(labelId).value = 'Hôm qua';
+                localStorage.setItem('yesterdayLabel', 'Hôm qua');
+            } else if (labelId === 'todayLabel') {
+                document.getElementById(labelId).value = 'Hôm nay';
+                localStorage.setItem('todayLabel', 'Hôm nay');
+            }
+        }
 
         function generateReport() {
             const name = document.getElementById("name").value.trim();
             const date = document.getElementById("date").value;
+            const yesterdayLabel = document.getElementById("yesterdayLabel").value.trim() || 'Hôm qua';
+            const todayLabel = document.getElementById("todayLabel").value.trim() || 'Hôm nay';
             const yesterday = document.getElementById("yesterday").value.trim();
             const today = document.getElementById("today").value.trim();
+            
+            // Lưu các nhãn tùy chỉnh vào localStorage để sử dụng sau này
+            localStorage.setItem('yesterdayLabel', yesterdayLabel);
+            localStorage.setItem('todayLabel', todayLabel);
             
             const formatLines = (text) => {
                 if (!text) return '    + Không có';
@@ -393,15 +458,15 @@
             let formattedDate = '';
             if (date) {
                 const dateObj = new Date(date);
-		formattedDate = dateObj.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                formattedDate = dateObj.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
             }
             
             let output = ``;
             output += `${name || '[Chưa nhập tên]'}\n`;
             output += `Daily (${formattedDate || '[Chưa chọn ngày]'})\n`;
-            output += `# Hôm qua\n`;
+            output += `# ${yesterdayLabel}\n`;
             output += `${formatLines(yesterday)}\n`;
-            output += `\# Hôm nay\n`;
+            output += `# ${todayLabel}\n`;
             output += `${formatLines(today)}\n`;
             
             document.getElementById("outputText").innerText = output;
