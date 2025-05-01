@@ -44,7 +44,7 @@ ${formatTasks(data.todayTasks)}
 
   const handleCopy = async () => {
     const report = generateReport();
-    if (report.includes('Báo cáo sẽ hiển thị ở đây')) {
+    if (!report) {
       alert('Vui lòng tạo báo cáo trước khi sao chép!');
       return;
     }
