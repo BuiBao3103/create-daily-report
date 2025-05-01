@@ -66,5 +66,5 @@
     "vitest": "^3.0.9"
   },
   "packageManager": "yarn@4.9.1",
-  "homepage": "https://buibao3103.github.io/create-daily-report"
+  "homepage": "https://buibao3103.github.io/create-daily-report/"
 }
