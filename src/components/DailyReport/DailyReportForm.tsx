@@ -26,9 +26,15 @@ const defaultLabels = {
 };
 
 export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
+  const getVNDate = () => {
+    const now = new Date();
+    const vnTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    return vnTime.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState<DailyReportData>({
     name: '',
-    date: new Date().toISOString().split('T')[0],
+    date: getVNDate(),
     yesterdayLabel: defaultLabels.yesterday,
     todayLabel: defaultLabels.today,
     yesterdayTasks: [],
