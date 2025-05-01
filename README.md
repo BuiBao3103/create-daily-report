@@ -1,34 +1,29 @@
-# Mantine Vite template
+# Daily Report App
 
-## Features
+A modern, minimal web application to create, save, and copy your daily work reports quickly and efficiently. The interface supports both Light and Dark modes and is optimized for a smooth user experience on all devices.
 
-This template comes with the following features:
+## Tech Stack
+- [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Mantine UI](https://mantine.dev/) (UI, theming, forms)
+- [Vite](https://vitejs.dev/) (build tool)
 
-- [PostCSS](https://postcss.org/) with [mantine-postcss-preset](https://mantine.dev/styles/postcss-preset)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Storybook](https://storybook.js.org/)
-- [Vitest](https://vitest.dev/) setup with [React Testing Library](https://testing-library.com/docs/react-testing-library/intro)
-- ESLint setup with [eslint-config-mantine](https://github.com/mantinedev/eslint-config-mantine)
+## Getting Started
 
-## npm scripts
+```bash
+# 1. Install dependencies
+npm install
+# or
+yarn install
 
-## Build and dev scripts
+# 2. Start the development server
+npm run dev
+# or
+yarn dev
 
-- `dev` – start development server
-- `build` – build production version of the app
-- `preview` – locally preview production build
+# 3. Open the app in your browser
+# Default: http://localhost:5173/
+```
 
-### Testing scripts
+---
 
-- `typecheck` – checks TypeScript types
-- `lint` – runs ESLint
-- `prettier:check` – checks files with Prettier
-- `vitest` – runs vitest tests
-- `vitest:watch` – starts vitest watch
-- `test` – runs `vitest`, `prettier:check`, `lint` and `typecheck` scripts
-
-### Other scripts
-
-- `storybook` – starts storybook dev server
-- `storybook:build` – build production storybook bundle to `storybook-static`
-- `prettier:write` – formats all files with Prettier
+**Made with ❤️ using [Mantine UI](https://mantine.dev/) & React**
