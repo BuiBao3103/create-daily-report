@@ -76,7 +76,8 @@ export function HomePage() {
             <Paper
               p="md"
               style={{
-                height: '100%',
+                minHeight: '100%',
+                height: 'auto',
                 overflowY: 'auto',
                 background: 'var(--mantine-color-body)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
