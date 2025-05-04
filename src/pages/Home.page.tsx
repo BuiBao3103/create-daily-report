@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Container, Grid, Paper, Title, Box } from '@mantine/core';
 import { keyframes } from '@emotion/react';
-import { DailyReportForm, DailyReportData } from '../components/DailyReport/DailyReportForm';
-import { DailyReportOutput } from '../components/DailyReport/DailyReportOutput';
+import { Box, Container, Grid, Paper, Title } from '@mantine/core';
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
+import { DailyReportForm } from '../components/DailyReport/DailyReportForm';
+import { DailyReportData } from '../components/DailyReport/DailyReportForm.types';
+import { DailyReportOutput } from '../components/DailyReport/DailyReportOutput';
 
 const fadeIn = keyframes({
   from: { opacity: 0, transform: 'translateY(20px)' },
@@ -29,33 +30,33 @@ export function HomePage() {
         transition: 'background 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
-      <Container 
-        size="xl" 
-        style={{ 
-          width: '100%', 
-          maxWidth: '900px',
+      <Container
+        size="xl"
+        style={{
+          width: '100%',
+          maxWidth: '1200px',
           animation: `${fadeIn} 0.5s ease-out`,
         }}
       >
         <ColorSchemeToggle />
-        <Title 
-          order={1} 
-          ta="center" 
-          mb="xl" 
+        <Title
+          order={1}
+          ta="center"
+          mb="xl"
           c="blue.6"
           style={{
             textShadow: '2px 2px 4px rgba(0, 0, 0, 0.1)',
             transition: 'all 0.3s ease',
           }}
         >
-          Báo Cáo Hàng Ngày
+          Báo cáo hàng ngày
         </Title>
-        <Grid gutter={0} style={{ height: 'calc(100vh - 30px)', maxHeight: '700px' }}>
+        <Grid gutter={0} style={{ height: 'calc(100vh - 30px)', maxHeight: '800px' }}>
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Paper 
-              p="md" 
-              style={{ 
-                height: '100%', 
+            <Paper
+              p="md"
+              style={{
+                height: '100%',
                 overflowY: 'auto',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 borderTopLeftRadius: 16,
