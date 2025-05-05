@@ -86,14 +86,14 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
         data.yesterdayTasks.forEach((task) => {
           const taskId = task.task_id ? `${task.task_id} - ` : '';
           const project = task.project ? `(${task.project})` : '';
-          output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, thực tế: ${task.act_time}h - ${task.status} - \n`;
+          output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, ${task.act_time ? "thực tế: " + task.act_time + "h" : ""} - ${task.status} - \n`;
         });
       }
     } else if (data.yesterdayTasks.length > 0) {
       data.yesterdayTasks.forEach((task) => {
         const taskId = task.task_id ? `${task.task_id} - ` : '';
         const project = task.project ? `(${task.project})` : '';
-        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, thực tế: ${task.act_time}h - ${task.status}\n`;
+        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, ${task.act_time ? "thực tế: " + task.act_time + "h" : ""} - ${task.status}\n`;
       });
     }
 
@@ -115,14 +115,14 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
         data.todayTasks.forEach((task) => {
           const taskId = task.task_id ? `${task.task_id} - ` : '';
           const project = task.project ? `(${task.project})` : '';
-          output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, thực tế: ${task.act_time}h - ${task.status} \n`;
+          output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, ${task.act_time ? "thực tế: " + task.act_time + "h" : ""} - ${task.status} \n`;
         });
       }
     } else if (data.todayTasks.length > 0) {
       data.todayTasks.forEach((task) => {
         const taskId = task.task_id ? `${task.task_id} - ` : '';
         const project = task.project ? `(${task.project})` : '';
-        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, thực tế: ${task.act_time}h - ${task.status}\n`;
+        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, ${task.act_time ? "thực tế: " + task.act_time + "h" : ""} - ${task.status}\n`;
       });
     }
 
