@@ -1,10 +1,19 @@
 export const projects = [
   'EduSTM',
-  'EduCollege',
-  'EduSchool',
+  'EduSTM Mobile',
+  'EduStudentActivity',
+  'AI Agent EduStudentActivity',
   'EduCoE',
-  'ActivityManagement',
-  'EduVerification'
+  'EduQMES',
+  'EduCollege',
+  'EduSRM',
+  'EduASM',
+  'EduSchool',
+  'EduVerification',
+  'EduDashboard',
+  'EduKids',
+  'EduMultichoise',
+  'InternAI',
 ];
 
 export const statuses = [
@@ -33,8 +42,8 @@ export const interns = [
 ];
 
 export const absenceReasons = [
-  'off theo lịch',
-  'off sáng theo lịch',
-  'off chiều theo lịch',
-  'lý do riêng'
+  'Off theo lịch',
+  'Off sáng theo lịch',
+  'Off chiều theo lịch',
+  'Lý do riêng'
 ] as const; 
