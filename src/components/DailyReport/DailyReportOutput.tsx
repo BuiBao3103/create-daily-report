@@ -58,30 +58,45 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
 
   const formatTextOutput = () => {
     if (!data) return '';
-    
+
     let output = '';
-    
+
     // Header
     output += `${data.intern_name}${data.is_intern ? ' (Thực tập sinh)' : ''}\n`;
-    output += `Daily (${data.date})\n\n`;
-    
+    output += `Daily (${formatDate(data.date)})\n\n`;
+
     // Yesterday section
     output += `# ${data.yesterdayLabel}\n`;
+    const isPartialOff = (reason: string) => {
+      return /off\s*(sáng|chiều)/i.test(reason);
+    };
     if (data.yesterdayAbsence) {
       const typeMap: { [key: string]: string } = {
         SCHEDULED: 'theo lịch',
         EXCUSED: 'có phép',
         UNEXCUSED: 'không phép',
       };
-      output += `   + Nghỉ ${typeMap[data.yesterdayAbsence.type]}: ${data.yesterdayAbsence.reason}\n`;
+
+      const { type, reason } = data.yesterdayAbsence;
+      const isPartial = isPartialOff(reason);
+
+      output += `   + Nghỉ ${typeMap[type]}: ${reason}\n`;
+
+      if (isPartial && data.yesterdayTasks.length > 0) {
+        data.yesterdayTasks.forEach((task) => {
+          const taskId = task.task_id ? `${task.task_id} - ` : '';
+          const project = task.project ? `(${task.project})` : '';
+          output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, thực tế: ${task.act_time}h - ${task.status} - \n`;
+        });
+      }
     } else if (data.yesterdayTasks.length > 0) {
       data.yesterdayTasks.forEach((task) => {
         const taskId = task.task_id ? `${task.task_id} - ` : '';
         const project = task.project ? `(${task.project})` : '';
-        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h - ${task.status}\n`;
+        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, thực tế: ${task.act_time}h - ${task.status}\n`;
       });
     }
-    
+
     // Today section
     output += `\n# ${data.todayLabel}\n`;
     if (data.todayAbsence) {
@@ -90,20 +105,32 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
         EXCUSED: 'có phép',
         UNEXCUSED: 'không phép',
       };
-      output += `   + Nghỉ ${typeMap[data.todayAbsence.type]}: ${data.todayAbsence.reason}\n`;
+
+      const { type, reason } = data.todayAbsence;
+      const isPartial = isPartialOff(reason);
+
+      output += `   + Nghỉ ${typeMap[type]}: ${reason}\n`;
+
+      if (isPartial && data.todayTasks.length > 0) {
+        data.todayTasks.forEach((task) => {
+          const taskId = task.task_id ? `${task.task_id} - ` : '';
+          const project = task.project ? `(${task.project})` : '';
+          output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, thực tế: ${task.act_time}h - ${task.status} \n`;
+        });
+      }
     } else if (data.todayTasks.length > 0) {
       data.todayTasks.forEach((task) => {
         const taskId = task.task_id ? `${task.task_id} - ` : '';
         const project = task.project ? `(${task.project})` : '';
-        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h - ${task.status}\n`;
+        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, thực tế: ${task.act_time}h - ${task.status}\n`;
       });
     }
-    
+
     // Waiting for task
     if (data.waitingForTask) {
       output += '   + Chờ task';
     }
-    
+
     return output;
   };
 
