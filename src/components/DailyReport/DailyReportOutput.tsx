@@ -1,17 +1,6 @@
 import { useState } from 'react';
 import { IconCopy, IconFileText, IconPrinter, IconTable } from '@tabler/icons-react';
-import {
-  ActionIcon,
-  Badge,
-  Box,
-  Button,
-  Group,
-  Paper,
-  Stack,
-  Table,
-  Text,
-  Tooltip,
-} from '@mantine/core';
+import { ActionIcon, Badge, Group, Paper, Stack, Table, Text, Tooltip } from '@mantine/core';
 import { AbsenceType, DailyReportData } from './DailyReportForm.types';
 
 interface DailyReportOutputProps {
@@ -32,30 +21,6 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
     });
   };
 
-  const formatTasks = (tasks: DailyReportData['yesterdayTasks']) => {
-    if (tasks.length === 0) return '    + Không có';
-    return tasks
-      .map((task) => {
-        if (!task.content) return null;
-        const taskId = task.task_id ? `${task.task_id} - ` : '';
-        const project = task.project ? `(${task.project})` : '';
-        const actTime = task.act_time ? `, thực tế: ${task.act_time}h` : '';
-        return `    + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h${actTime} - ${task.status}`;
-      })
-      .filter(Boolean)
-      .join('\n');
-  };
-
-  const formatAbsence = (absence: { type: string; reason: string } | undefined) => {
-    if (!absence) return '';
-    const typeMap: { [key: string]: string } = {
-      SCHEDULED: 'theo lịch',
-      EXCUSED: 'có phép',
-      UNEXCUSED: 'không phép',
-    };
-    return `\n   + Nghỉ ${typeMap[absence.type]}: ${absence.reason}`;
-  };
-
   const formatTextOutput = () => {
     if (!data) return '';
 
@@ -67,9 +32,7 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
 
     // Yesterday section
     output += `# ${data.yesterdayLabel}\n`;
-    const isPartialOff = (reason: string) => {
-      return /off\s*(sáng|chiều)/i.test(reason);
-    };
+
     if (data.yesterdayAbsence) {
       const typeMap: { [key: string]: string } = {
         SCHEDULED: 'theo lịch',
@@ -78,22 +41,14 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
       };
 
       const { type, reason } = data.yesterdayAbsence;
-      const isPartial = isPartialOff(reason);
 
       output += `   + Nghỉ ${typeMap[type]}: ${reason}\n`;
-
-      if (isPartial && data.yesterdayTasks.length > 0) {
-        data.yesterdayTasks.forEach((task) => {
-          const taskId = task.task_id ? `${task.task_id} - ` : '';
-          const project = task.project ? `(${task.project})` : '';
-          output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, ${task.act_time ? "thực tế: " + task.act_time + "h" : ""} - ${task.status} - \n`;
-        });
-      }
-    } else if (data.yesterdayTasks.length > 0) {
+    }
+    if (data.yesterdayTasks.length > 0) {
       data.yesterdayTasks.forEach((task) => {
-        const taskId = task.task_id ? `${task.task_id} - ` : '';
-        const project = task.project ? `(${task.project})` : '';
-        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, ${task.act_time ? "thực tế: " + task.act_time + "h" : ""} - ${task.status}\n`;
+        const taskId = task.task_id ? `[${task.task_id}] - ` : '';
+        const project = task.project ? `(${task.project}) - ` : '';
+        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h${task.act_time ? ', thực tế: ' + task.act_time + 'h' : ' '} - ${task.status}\n`;
       });
     }
 
@@ -107,22 +62,14 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
       };
 
       const { type, reason } = data.todayAbsence;
-      const isPartial = isPartialOff(reason);
 
       output += `   + Nghỉ ${typeMap[type]}: ${reason}\n`;
-
-      if (isPartial && data.todayTasks.length > 0) {
-        data.todayTasks.forEach((task) => {
-          const taskId = task.task_id ? `${task.task_id} - ` : '';
-          const project = task.project ? `(${task.project})` : '';
-          output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, ${task.act_time ? "thực tế: " + task.act_time + "h" : ""} - ${task.status} \n`;
-        });
-      }
-    } else if (data.todayTasks.length > 0) {
+    }
+    if (data.todayTasks.length > 0) {
       data.todayTasks.forEach((task) => {
-        const taskId = task.task_id ? `${task.task_id} - ` : '';
-        const project = task.project ? `(${task.project})` : '';
-        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h, ${task.act_time ? "thực tế: " + task.act_time + "h" : ""} - ${task.status}\n`;
+        const taskId = task.task_id ? `[${task.task_id}]` : '';
+        const project = task.project ? `(${task.project}) - ` : '';
+        output += `   + ${taskId}${project} ${task.content} - dự kiến: ${task.est_time}h ${task.act_time ? ', thực tế: ' + task.act_time + 'h' : ' '} - ${task.status}\n`;
       });
     }
 
