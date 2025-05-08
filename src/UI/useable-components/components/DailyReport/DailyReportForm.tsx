@@ -1,4 +1,6 @@
-import { useState } from 'react';
+'use-client'
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { IconAlertCircle, IconCalendarOff, IconPlus, IconX } from '@tabler/icons-react';
 import {
   ActionIcon,
@@ -15,7 +17,7 @@ import {
   TextInput,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { interns } from '@/Utils/constants/TaskForm.constants';
+import { TaskForm } from './TaskForm/TaskForm';
 import {
   Absence,
   AbsenceType,
@@ -23,17 +25,23 @@ import {
   DailyReportFormProps,
 } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
 import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
-import { TaskForm } from './TaskForm/TaskForm';
+import { Intern, InternsResponse } from '@/Utils/types/intern.types';
+import { internService } from '@/Lib/Services/intern.service';
 
 const absenceReasons = ['Nghỉ ốm', 'Nghỉ phép', 'Nghỉ lễ', 'Nghỉ việc riêng', 'Nghỉ không lương'];
 
 export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
+  const { data: internsData, isLoading } = useQuery({
+    queryKey: ['interns'],
+    queryFn: internService.getInterns
+  });
+
   const [yesterdayTasks, setYesterdayTasks] = useState<Task[]>([]);
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
   const [internName, setInternName] = useState('');
   const [isIntern, setIsIntern] = useState(false);
-  const [yesterdayLabel, setYesterdayLabel] = useState('Hôm qua:');
-  const [todayLabel, setTodayLabel] = useState('Hôm nay:');
+  const [yesterdayDate, setYesterdayDate] = useState<Date>(new Date());
+  const [todayDate, setTodayDate] = useState<Date>(new Date());
   const [waitingForTask, setWaitingForTask] = useState(false);
   const [yesterdayAbsence, setYesterdayAbsence] = useState<Absence | undefined>();
   const [todayAbsence, setTodayAbsence] = useState<Absence | undefined>();
@@ -49,6 +57,21 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
     absenceType: false,
     absenceReason: false,
   });
+
+  // Calculate previous date based on current date
+  useEffect(() => {
+    const today = new Date();
+    setTodayDate(today);
+
+    const yesterday = new Date(today);
+    // If today is Monday (1), set to last Friday
+    if (today.getDay() === 1) {
+      yesterday.setDate(today.getDate() - 3); // Go back 3 days to get to Friday
+    } else {
+      yesterday.setDate(today.getDate() - 1); // Go back 1 day
+    }
+    setYesterdayDate(yesterday);
+  }, []);
 
   const showNotification = (message: string) => {
     setErrorMessage(message);
@@ -123,8 +146,8 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
       date: date.toISOString().split('T')[0],
       intern_name: internName,
       is_intern: isIntern,
-      yesterdayLabel,
-      todayLabel,
+      yesterdayLabel: yesterdayDate.toLocaleDateString('vi-VN'),
+      todayLabel: todayDate.toLocaleDateString('vi-VN'),
       yesterdayTasks,
       todayTasks,
       waitingForTask,
@@ -195,10 +218,10 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
               allowDeselect={false}
               label="Chọn thực tập sinh"
               placeholder="Chọn thực tập sinh"
-              data={interns.map((intern) => ({
+              data={internsData?.results.map((intern) => ({
                 value: intern.full_name,
                 label: `${intern.full_name} - ${intern.uni_code}`,
-              }))}
+              })) || []}
               value={internName}
               onChange={(value) => {
                 setInternName(value || '');
@@ -206,31 +229,20 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
               }}
               withAsterisk
               error={touched.internName && !internName && 'Vui lòng chọn thực tập sinh'}
+              disabled={isLoading}
             />
           )}
 
-          {/* Nhãn 1 */}
-          <Group gap={8} align="center" mb={4} wrap="nowrap">
-            <TextInput
-              label="Nhãn 1"
-              value={yesterdayLabel}
-              onChange={(e) => setYesterdayLabel(e.target.value)}
-              placeholder="Nhãn..."
-              size="sm"
-              radius="sm"
-              style={{ flex: 1, minWidth: 0 }}
-            />
-            <Button
-              variant="light"
-              size="xs"
-              radius="sm"
-              px={10}
-              style={{ fontWeight: 400, minWidth: 0, marginTop: 22 }}
-              onClick={() => setYesterdayLabel('Hôm qua:')}
-            >
-              Mặc định
-            </Button>
-          </Group>
+          {/* Ngày trước */}
+          <DateInput
+            label="Ngày trước"
+            value={yesterdayDate}
+            onChange={(value: Date | null) => setYesterdayDate(value || new Date())}
+            valueFormat="DD/MM/YYYY"
+            maxDate={new Date()}
+            clearable={false}
+            disabled
+          />
 
           <Box>
             <Stack gap="xs">
@@ -301,28 +313,16 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
             </Stack>
           </Box>
 
-          {/* Nhãn 2 */}
-          <Group gap={8} align="center" mb={4} wrap="nowrap">
-            <TextInput
-              label="Nhãn 2"
-              value={todayLabel}
-              onChange={(e) => setTodayLabel(e.target.value)}
-              placeholder="Nhãn..."
-              size="sm"
-              radius="sm"
-              style={{ flex: 1, minWidth: 0 }}
-            />
-            <Button
-              variant="light"
-              size="xs"
-              radius="sm"
-              px={10}
-              style={{ fontWeight: 400, minWidth: 0, marginTop: 22 }}
-              onClick={() => setTodayLabel('Hôm nay:')}
-            >
-              Mặc định
-            </Button>
-          </Group>
+          {/* Ngày hôm nay */}
+          <DateInput
+            label="Ngày hôm nay"
+            value={todayDate}
+            onChange={(value: Date | null) => setTodayDate(value || new Date())}
+            valueFormat="DD/MM/YYYY"
+            maxDate={new Date()}
+            clearable={false}
+            disabled
+          />
 
           <Box>
             <Stack gap="xs">
