@@ -69,6 +69,7 @@ export function TaskForm({ task, index, onChange, onDelete, label }: TaskFormPro
             value={task.status}
             onChange={(value) => handleChange('status', value)}
             withAsterisk
+            allowDeselect={false}
             error={touched.status && !task.status && 'Vui lòng chọn trạng thái'}
           />
         </Group>
