@@ -1,6 +1,18 @@
-import { useState } from 'react';
-import { IconCopy, IconFileText, IconPrinter, IconTable } from '@tabler/icons-react';
-import { ActionIcon, Badge, Group, Paper, Stack, Table, Text, Tooltip } from '@mantine/core';
+import { useEffect, useState } from 'react';
+import { IconCopy, IconFileText, IconPrinter, IconRefresh, IconTable } from '@tabler/icons-react';
+import {
+  ActionIcon,
+  Badge,
+  Button,
+  Group,
+  LoadingOverlay,
+  Paper,
+  Stack,
+  Table,
+  Text,
+  Tooltip,
+} from '@mantine/core';
+import { checkDailyReportStatus, insertToGoogleSheet } from '../../api/googleSheets';
 import { AbsenceType, DailyReportData } from './DailyReportForm.types';
 
 interface DailyReportOutputProps {
@@ -8,9 +20,25 @@ interface DailyReportOutputProps {
 }
 
 export function DailyReportOutput({ data }: DailyReportOutputProps) {
-  console.log('data', data);
   const [copied, setCopied] = useState(false);
   const [isTableView, setIsTableView] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
+
+  const checkStatus = async () => {
+    if (!data?.intern_name || !data?.date) return;
+    
+    setIsChecking(true);
+    try {
+      const status = await checkDailyReportStatus(data.intern_name, data.date);
+      setHasReported(status);
+    } catch (error) {
+      console.error('Error checking daily report status:', error);
+    } finally {
+      setIsChecking(false);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -89,6 +117,27 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Không thể sao chép: ', err);
+    }
+  };
+
+  const handleSync = async () => {
+    if (!data) return;
+
+    // Check status first if not checked yet
+    if (!hasReported) {
+      await checkStatus();
+    }
+
+    setIsSyncing(true);
+    try {
+      const success = await insertToGoogleSheet(data);
+      if (success) {
+        setHasReported(true);
+      }
+    } catch (error) {
+      console.error('Error syncing to Google Sheets:', error);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -256,6 +305,33 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
           </Stack>
         )}
       </Paper>
+
+      {data?.is_intern && (
+        <Paper p="md" withBorder mt="md" pos="relative">
+          <LoadingOverlay visible={isSyncing || isChecking} />
+          <Group justify="space-between" align="center">
+            <Group gap="xs">
+              <Text size="sm" fw={500}>
+                Trạng thái đồng bộ:
+              </Text>
+              <Badge color={hasReported ? "green" : "gray"}>
+                {hasReported ? "Đã đồng bộ hôm nay" : "Chưa đồng bộ hôm nay"}
+              </Badge>
+            </Group>
+            <Button
+              variant="light"
+              leftSection={<IconRefresh size={16} />}
+              onClick={handleSync}
+              loading={isSyncing || isChecking}
+            >
+              Đồng bộ Google Sheet
+            </Button>
+          </Group>
+          <Text size="sm" c="dimmed" mt="xs">
+            Ngày: {formatDate(data.date)}
+          </Text>
+        </Paper>
+      )}
     </Stack>
   );
 }

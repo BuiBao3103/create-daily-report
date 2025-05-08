@@ -24,6 +24,7 @@ import {
 import { TaskForm } from './TaskForm/TaskForm';
 import { absenceReasons, interns } from './TaskForm/TaskForm.constants';
 import { Task } from './TaskForm/TaskForm.types';
+import { checkDailyReportStatus } from '@/api/googleSheets';
 
 export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
   const [yesterdayTasks, setYesterdayTasks] = useState<Task[]>([]);
@@ -97,6 +98,7 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
   };
 
   const handleSubmit = () => {
+    checkDailyReportStatus(internName, date.toISOString().split('T')[0])
     // Validate required fields
     const hasEmptyRequiredFields =
       yesterdayTasks.some((task) => !task.content || !task.est_time || !task.status) ||

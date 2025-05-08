@@ -10,4 +10,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './vitest.setup.mjs',
   },
+  server: {
+    allowedHosts: ['c016-210-245-33-111.ngrok-free.app'], // 👈 thêm domain này
+  },
 });
