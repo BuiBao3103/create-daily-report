@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { HomePage } from './UI/pages/Home.page';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { HomePage } from './UI/useable-components/pages/Home.page';
 
 export function Router() {
   return (

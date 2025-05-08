@@ -15,15 +15,17 @@ import {
   TextInput,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
+import { interns } from '@/Utils/constants/TaskForm.constants';
 import {
   Absence,
   AbsenceType,
   DailyReportData,
   DailyReportFormProps,
-} from '../../../enum/DailyEnum/DailyReportForm.types';
+} from '@/Utils/enums/DailyEnum/DailyReportForm.types';
+import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
 import { TaskForm } from './TaskForm/TaskForm';
-import { absenceReasons, interns } from '../../../enum/DailyEnum/TaskForm.constants';
-import { Task } from '../../../enum/DailyEnum/TaskForm.types';
+
+const absenceReasons = ['Nghỉ ốm', 'Nghỉ phép', 'Nghỉ lễ', 'Nghỉ việc riêng', 'Nghỉ không lương'];
 
 export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
   const [yesterdayTasks, setYesterdayTasks] = useState<Task[]>([]);
@@ -237,10 +239,12 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
                   key={index}
                   task={task}
                   index={index}
-                  onChange={(index, field, value) =>
+                  onChange={(index: number, field: keyof Task, value: any) =>
                     handleTaskChange(yesterdayTasks, setYesterdayTasks, index, field, value)
                   }
-                  onDelete={(index) => handleDeleteTask(yesterdayTasks, setYesterdayTasks, index)}
+                  onDelete={(index: number) =>
+                    handleDeleteTask(yesterdayTasks, setYesterdayTasks, index)
+                  }
                   label={`Task ${index + 1}`}
                 />
               ))}
@@ -327,10 +331,10 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
                   key={index}
                   task={task}
                   index={index}
-                  onChange={(index, field, value) =>
+                  onChange={(index: number, field: keyof Task, value: any) =>
                     handleTaskChange(todayTasks, setTodayTasks, index, field, value)
                   }
-                  onDelete={(index) => handleDeleteTask(todayTasks, setTodayTasks, index)}
+                  onDelete={(index: number) => handleDeleteTask(todayTasks, setTodayTasks, index)}
                   label={`Task ${index + 1}`}
                 />
               ))}
