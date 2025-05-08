@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { IconCopy, IconFileText, IconPrinter, IconTable } from '@tabler/icons-react';
 import { ActionIcon, Badge, Group, Paper, Stack, Table, Text, Tooltip } from '@mantine/core';
-import { DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
+import { AbsenceType, DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
 
 interface DailyReportOutputProps {
   readonly data?: DailyReportData;
