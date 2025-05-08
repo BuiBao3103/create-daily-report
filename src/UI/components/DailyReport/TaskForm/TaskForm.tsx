@@ -1,7 +1,7 @@
 import { TextInput, NumberInput, Select, Group, Stack, Button, Paper, Autocomplete } from '@mantine/core';
 import { IconTrash } from '@tabler/icons-react';
-import { TaskFormProps } from './TaskForm.types';
-import { projects, statuses } from './TaskForm.constants';
+import { TaskFormProps } from '../../../../enum/DailyEnum/TaskForm.types';
+import { projects, statuses } from '../../../../enum/DailyEnum/TaskForm.constants';
 import { useState } from 'react';
 
 export function TaskForm({ task, index, onChange, onDelete, label }: TaskFormProps) {

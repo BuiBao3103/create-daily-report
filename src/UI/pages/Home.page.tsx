@@ -3,7 +3,7 @@ import { keyframes } from '@emotion/react';
 import { Box, Container, Grid, Paper, Title } from '@mantine/core';
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
 import { DailyReportForm } from '../components/DailyReport/DailyReportForm';
-import { DailyReportData } from '../components/DailyReport/DailyReportForm.types';
+import { DailyReportData } from '../../enum/DailyEnum/DailyReportForm.types';
 import { DailyReportOutput } from '../components/DailyReport/DailyReportOutput';
 
 const fadeIn = keyframes({

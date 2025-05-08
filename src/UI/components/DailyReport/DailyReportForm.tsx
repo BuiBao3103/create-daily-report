@@ -20,10 +20,10 @@ import {
   AbsenceType,
   DailyReportData,
   DailyReportFormProps,
-} from './DailyReportForm.types';
+} from '../../../enum/DailyEnum/DailyReportForm.types';
 import { TaskForm } from './TaskForm/TaskForm';
-import { absenceReasons, interns } from './TaskForm/TaskForm.constants';
-import { Task } from './TaskForm/TaskForm.types';
+import { absenceReasons, interns } from '../../../enum/DailyEnum/TaskForm.constants';
+import { Task } from '../../../enum/DailyEnum/TaskForm.types';
 
 export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
   const [yesterdayTasks, setYesterdayTasks] = useState<Task[]>([]);

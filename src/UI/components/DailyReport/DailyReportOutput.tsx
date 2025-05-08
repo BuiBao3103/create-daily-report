@@ -12,7 +12,7 @@ import {
   Text,
   Tooltip,
 } from '@mantine/core';
-import { AbsenceType, DailyReportData } from './DailyReportForm.types';
+import { AbsenceType, DailyReportData } from '../../../enum/DailyEnum/DailyReportForm.types';
 
 interface DailyReportOutputProps {
   readonly data?: DailyReportData;
