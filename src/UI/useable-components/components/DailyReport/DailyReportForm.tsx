@@ -4,21 +4,17 @@ import { useEffect, useState } from 'react';
 import { IconAlertCircle, IconCalendarOff, IconPlus, IconX } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  ActionIcon,
-  Autocomplete,
-  Badge,
-  Box,
-  Button,
   Checkbox,
   Group,
-  Modal,
   Notification,
-  NumberInput,
+  Paper,
   Select,
   Stack,
   TextInput,
+  Title,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
+import { useForm } from '@mantine/form';
 import { internService } from '@/Lib/Services/intern.service';
 import {
   Absence,
@@ -28,9 +24,25 @@ import {
 } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
 import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
 import { Intern, InternsResponse } from '@/Utils/types/intern.types';
-import { TaskForm } from './TaskForm/TaskForm';
+import { AbsenceModal } from './components/AbsenceModal';
+import { DaySection } from './components/DaySection';
+import { TaskModal } from './components/TaskModal';
 
-const absenceReasons = ['Nghỉ ốm', 'Nghỉ phép', 'Nghỉ lễ', 'Nghỉ việc riêng', 'Nghỉ không lương'];
+interface FormValues {
+  internName: string;
+  date: Date;
+  isIntern: boolean;
+  yesterdayTasks: Task[];
+  todayTasks: Task[];
+  waitingForTask: boolean;
+  yesterdayDate: Date;
+  todayDate: Date;
+  yesterdayAbsence?: Absence;
+  todayAbsence?: Absence;
+  absenceType: AbsenceType;
+  absenceReason: string;
+  newTask: Task;
+}
 
 export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
   const { data: internsData, isLoading } = useQuery({
@@ -38,52 +50,54 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
     queryFn: internService.getInterns,
   });
 
-  const [yesterdayTasks, setYesterdayTasks] = useState<Task[]>([]);
-  const [todayTasks, setTodayTasks] = useState<Task[]>([]);
-  const [internName, setInternName] = useState('');
-  const [isIntern, setIsIntern] = useState(false);
-  const [yesterdayDate, setYesterdayDate] = useState<Date>(new Date());
-  const [todayDate, setTodayDate] = useState<Date>(new Date());
-  const [waitingForTask, setWaitingForTask] = useState(false);
-  const [yesterdayAbsence, setYesterdayAbsence] = useState<Absence | undefined>();
-  const [todayAbsence, setTodayAbsence] = useState<Absence | undefined>();
-  const [showAbsenceModal, setShowAbsenceModal] = useState<'yesterday' | 'today' | null>(null);
-  const [absenceType, setAbsenceType] = useState<AbsenceType>(AbsenceType.SCHEDULED);
-  const [absenceReason, setAbsenceReason] = useState('');
-  const [date, setDate] = useState<Date>(new Date());
+  const form = useForm<FormValues>({
+    initialValues: {
+      internName: '',
+      date: new Date(),
+      isIntern: false,
+      yesterdayTasks: [],
+      todayTasks: [],
+      waitingForTask: false,
+      yesterdayDate: (() => {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        if (today.getDay() === 1) {
+          yesterday.setDate(today.getDate() - 3);
+        }
+        return yesterday;
+      })(),
+      todayDate: new Date(),
+      absenceType: AbsenceType.SCHEDULED,
+      absenceReason: '',
+      newTask: {
+        content: '',
+        task_id: '',
+        project: '',
+        est_time: 0,
+        act_time: 0,
+        status: 'To Do',
+      },
+    },
+    validate: {
+      internName: (value) => (value.trim().length > 0 ? null : 'Vui lòng nhập họ và tên'),
+      date: (value) => (value ? null : 'Vui lòng chọn ngày báo cáo'),
+      newTask: {
+        content: (value) => (value.trim().length > 0 ? null : 'Vui lòng nhập nội dung công việc'),
+        est_time: (value) => (value && value > 0 ? null : 'Vui lòng nhập thời gian dự kiến'),
+      },
+      absenceReason: (value, values) =>
+        (values.yesterdayAbsence || values.todayAbsence) && !value
+          ? 'Vui lòng nhập lý do nghỉ'
+          : null,
+    },
+  });
+
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [touched, setTouched] = useState({
-    internName: false,
-    date: false,
-    absenceType: false,
-    absenceReason: false,
-  });
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
-  const [newTask, setNewTask] = useState<Task>({
-    content: '',
-    task_id: '',
-    project: '',
-    est_time: 0,
-    act_time: 0,
-    status: 'To Do',
-  });
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
-  // Calculate previous date based on current date
-  useEffect(() => {
-    const today = new Date();
-    setTodayDate(today);
-
-    const yesterday = new Date(today);
-    // If today is Monday (1), set to last Friday
-    if (today.getDay() === 1) {
-      yesterday.setDate(today.getDate() - 3); // Go back 3 days to get to Friday
-    } else {
-      yesterday.setDate(today.getDate() - 1); // Go back 1 day
-    }
-    setYesterdayDate(yesterday);
-  }, []);
+  const [showAbsenceModal, setShowAbsenceModal] = useState<boolean | 'yesterday' | 'today'>(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const showNotification = (message: string) => {
     setErrorMessage(message);
@@ -91,29 +105,19 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
     setTimeout(() => setShowError(false), 3000);
   };
 
-  const handleTaskChange = (
-    tasks: Task[],
-    setTasks: React.Dispatch<React.SetStateAction<Task[]>>,
-    index: number,
-    field: keyof Task,
-    value: any
-  ) => {
+  const handleTaskChange = (tasks: Task[], index: number, field: keyof Task, value: any) => {
     const newTasks = [...tasks];
     newTasks[index] = {
       ...newTasks[index],
       [field]: value,
       workDate: field === 'workDate' ? value : newTasks[index].workDate,
     };
-    setTasks(newTasks);
+    return newTasks;
   };
 
-  const handleAddTask = (
-    tasks: Task[],
-    setTasks: React.Dispatch<React.SetStateAction<Task[]>>,
-    date: Date
-  ) => {
+  const handleAddTask = (date: Date) => {
     setSelectedDate(date);
-    setNewTask({
+    form.setFieldValue('newTask', {
       content: '',
       task_id: '',
       project: '',
@@ -124,89 +128,101 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
     setShowAddTaskModal(true);
   };
 
-  const handleDeleteTask = (
-    tasks: Task[],
-    setTasks: React.Dispatch<React.SetStateAction<Task[]>>,
-    index: number
-  ) => {
-    const newTasks = tasks.filter((_, i) => i !== index);
-    setTasks(newTasks);
+  const handleDeleteTask = (tasks: Task[], index: number) => {
+    return tasks.filter((_, i) => i !== index);
   };
 
   const handleAbsenceSubmit = () => {
-    if (showAbsenceModal === 'yesterday') {
-      setYesterdayAbsence({ type: absenceType, reason: absenceReason });
-    } else {
-      setTodayAbsence({ type: absenceType, reason: absenceReason });
+    const validationResult = form.validate();
+    if (validationResult.hasErrors) {
+      return;
     }
-    setShowAbsenceModal(null);
-    setAbsenceType(AbsenceType.SCHEDULED);
-    setAbsenceReason('');
+
+    if (showAbsenceModal === 'yesterday') {
+      form.setFieldValue('yesterdayAbsence', {
+        type: form.values.absenceType,
+        reason: form.values.absenceReason,
+      });
+    } else {
+      form.setFieldValue('todayAbsence', {
+        type: form.values.absenceType,
+        reason: form.values.absenceReason,
+      });
+    }
+    setShowAbsenceModal(false);
+    form.setFieldValue('absenceType', AbsenceType.SCHEDULED);
+    form.setFieldValue('absenceReason', '');
 
     // Update output immediately
     const data: DailyReportData = {
-      date: date.toISOString().split('T')[0],
-      intern_name: internName,
-      is_intern: isIntern,
-      yesterdayLabel: yesterdayDate.toLocaleDateString('vi-VN'),
-      todayLabel: todayDate.toLocaleDateString('vi-VN'),
-      yesterdayTasks,
-      todayTasks,
-      waitingForTask,
-      yesterdayAbsence: showAbsenceModal === 'yesterday' 
-        ? { type: absenceType, reason: absenceReason } 
-        : yesterdayAbsence,
-      todayAbsence: showAbsenceModal === 'today' 
-        ? { type: absenceType, reason: absenceReason } 
-        : todayAbsence,
+      date: form.values.date.toISOString().split('T')[0],
+      intern_name: form.values.internName,
+      is_intern: form.values.isIntern,
+      yesterdayLabel: form.values.yesterdayDate.toLocaleDateString('vi-VN'),
+      todayLabel: form.values.todayDate.toLocaleDateString('vi-VN'),
+      yesterdayTasks: form.values.yesterdayTasks,
+      todayTasks: form.values.todayTasks,
+      waitingForTask: form.values.waitingForTask,
+      yesterdayAbsence: form.values.yesterdayAbsence,
+      todayAbsence: form.values.todayAbsence,
     };
     onSubmit(data);
   };
 
-  const handleConfirmAddTask = () => {
-    if (!newTask.content || !newTask.est_time) {
-      showNotification('Vui lòng điền đầy đủ thông tin bắt buộc');
-      return;
-    }
-
+  const handleConfirmAddTask = (task: Task) => {
     const taskToAdd: Task = {
-      ...newTask,
-      workDate: selectedDate.toLocaleDateString('vi-VN'),
+      ...task,
+      workDate: selectedDate?.toLocaleDateString('vi-VN'),
     };
 
-    if (selectedDate.toDateString() === yesterdayDate.toDateString()) {
-      setYesterdayTasks([...yesterdayTasks, taskToAdd]);
+    if (selectedDate?.toDateString() === form.values.yesterdayDate.toDateString()) {
+      form.setFieldValue('yesterdayTasks', [...form.values.yesterdayTasks, taskToAdd]);
     } else {
-      setTodayTasks([...todayTasks, taskToAdd]);
+      form.setFieldValue('todayTasks', [...form.values.todayTasks, taskToAdd]);
     }
     setShowAddTaskModal(false);
-    setNewTask({
-      content: '',
-      task_id: '',
-      project: '',
-      est_time: 0,
-      act_time: 0,
-      status: 'To Do',
-    });
 
     // Update output immediately
     const data: DailyReportData = {
-      date: date.toISOString().split('T')[0],
-      intern_name: internName,
-      is_intern: isIntern,
-      yesterdayLabel: yesterdayDate.toLocaleDateString('vi-VN'),
-      todayLabel: todayDate.toLocaleDateString('vi-VN'),
-      yesterdayTasks: selectedDate.toDateString() === yesterdayDate.toDateString() 
-        ? [...yesterdayTasks, taskToAdd] 
-        : yesterdayTasks,
-      todayTasks: selectedDate.toDateString() === todayDate.toDateString() 
-        ? [...todayTasks, taskToAdd] 
-        : todayTasks,
-      waitingForTask,
-      yesterdayAbsence,
-      todayAbsence,
+      date: form.values.date.toISOString().split('T')[0],
+      intern_name: form.values.internName,
+      is_intern: form.values.isIntern,
+      yesterdayLabel: form.values.yesterdayDate.toLocaleDateString('vi-VN'),
+      todayLabel: form.values.todayDate.toLocaleDateString('vi-VN'),
+      yesterdayTasks:
+        selectedDate?.toDateString() === form.values.yesterdayDate.toDateString()
+          ? [...form.values.yesterdayTasks, taskToAdd]
+          : form.values.yesterdayTasks,
+      todayTasks:
+        selectedDate?.toDateString() === form.values.todayDate.toDateString()
+          ? [...form.values.todayTasks, taskToAdd]
+          : form.values.todayTasks,
+      waitingForTask: form.values.waitingForTask,
+      yesterdayAbsence: form.values.yesterdayAbsence,
+      todayAbsence: form.values.todayAbsence,
     };
     onSubmit(data);
+  };
+
+  const handleAddAbsence = (date: Date) => {
+    setSelectedDate(date);
+    setShowAbsenceModal(true);
+  };
+
+  const handleWaitingForTaskChange = (date: Date, checked: boolean) => {
+    form.setFieldValue('waitingForTask', checked);
+    onSubmit({
+      date: date.toISOString().split('T')[0],
+      intern_name: form.values.internName,
+      is_intern: form.values.isIntern,
+      yesterdayLabel: form.values.yesterdayDate.toLocaleDateString('vi-VN'),
+      todayLabel: form.values.todayDate.toLocaleDateString('vi-VN'),
+      yesterdayTasks: form.values.yesterdayTasks,
+      todayTasks: form.values.todayTasks,
+      waitingForTask: checked,
+      yesterdayAbsence: form.values.yesterdayAbsence,
+      todayAbsence: form.values.todayAbsence,
+    });
   };
 
   return (
@@ -222,265 +238,121 @@ export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
           {errorMessage}
         </Notification>
       )}
-      <Stack>
-        <Group grow align="flex-start">
-          <TextInput
-            label="Họ và tên"
-            placeholder="Nhập họ và tên"
-            value={internName}
-            onChange={(e) => {
-              setInternName(e.target.value);
-              setTouched((prev) => ({ ...prev, internName: true }));
-            }}
-            disabled={isIntern}
-            withAsterisk
-            error={touched.internName && !internName && 'Vui lòng nhập họ và tên'}
-          />
-          <DateInput
-            label="Ngày báo cáo"
-            placeholder="Chọn ngày"
-            value={date}
-            onChange={(value: Date | null) => {
-              setDate(value || new Date());
-              setTouched((prev) => ({ ...prev, date: true }));
-            }}
-            valueFormat="DD/MM/YYYY"
-            maxDate={new Date()}
-            withAsterisk
-            error={touched.date && !date && 'Vui lòng chọn ngày báo cáo'}
-            clearable={false}
-            style={{ flex: 1 }}
-          />
-          <Checkbox
-            label="Là thực tập sinh"
-            checked={isIntern}
-            onChange={(e) => setIsIntern(e.currentTarget.checked)}
-            mt={25}
-          />
-        </Group>
-
-        {isIntern && (
-          <Select
-            allowDeselect={false}
-            label="Chọn thực tập sinh"
-            placeholder="Chọn thực tập sinh"
-            data={
-              internsData?.results.map((intern) => ({
-                value: intern.full_name,
-                label: `${intern.full_name} - ${intern.uni_code}`,
-              })) || []
-            }
-            value={internName}
-            onChange={(value) => {
-              setInternName(value || '');
-              setTouched((prev) => ({ ...prev, internName: true }));
-            }}
-            withAsterisk
-            error={touched.internName && !internName && 'Vui lòng chọn thực tập sinh'}
-            disabled={isLoading}
-          />
-        )}
-
-        {/* Ngày trước */}
-        <DateInput
-          label="Ngày trước"
-          value={yesterdayDate}
-          onChange={(value: Date | null) => setYesterdayDate(value || new Date())}
-          valueFormat="DD/MM/YYYY"
-          maxDate={new Date()}
-          clearable={false}
-          disabled
-        />
-
-        <Box>
-          <Stack gap="xs">
-            <Group justify="space-between">
-              <Group>
-                <Button
-                  variant="light"
-                  size="xs"
-                  leftSection={<IconPlus size={14} />}
-                  onClick={() => handleAddTask(yesterdayTasks, setYesterdayTasks, yesterdayDate)}
-                >
-                  Thêm task
-                </Button>
-                <Button
-                  variant="light"
-                  size="xs"
-                  leftSection={<IconCalendarOff size={14} />}
-                  onClick={() => setShowAbsenceModal('yesterday')}
-                >
-                  Nghỉ
-                </Button>
-              </Group>
-              {yesterdayAbsence && (
-                <Group gap="xs">
-                  <Badge
-                    variant="light"
-                    color={
-                      yesterdayAbsence.type === AbsenceType.SCHEDULED
-                        ? 'blue'
-                        : yesterdayAbsence.type === AbsenceType.EXCUSED
-                          ? 'green'
-                          : 'red'
-                    }
-                  >
-                    Nghỉ{' '}
-                    {yesterdayAbsence.type === AbsenceType.SCHEDULED
-                      ? 'theo lịch'
-                      : yesterdayAbsence.type === AbsenceType.EXCUSED
-                        ? 'có phép'
-                        : 'không phép'}
-                    : {yesterdayAbsence.reason}
-                  </Badge>
-                  <ActionIcon
-                    variant="subtle"
-                    color="gray"
-                    size="sm"
-                    onClick={() => setYesterdayAbsence(undefined)}
-                  >
-                    <IconX size={14} />
-                  </ActionIcon>
-                </Group>
-              )}
+      <Stack gap="md">
+        <Paper shadow="xs" p="md">
+          <Stack gap="md">
+            <Title order={3}>Báo cáo công việc</Title>
+            <Group grow align="flex-start">
+              <TextInput
+                label="Họ và tên"
+                placeholder="Nhập họ và tên"
+                disabled={form.values.isIntern}
+                withAsterisk
+                {...form.getInputProps('internName')}
+              />
+              <DateInput
+                label="Ngày báo cáo"
+                placeholder="Chọn ngày"
+                valueFormat="DD/MM/YYYY"
+                maxDate={new Date()}
+                withAsterisk
+                clearable={false}
+                style={{ flex: 1 }}
+                {...form.getInputProps('date')}
+              />
+              <Checkbox
+                label="Là thực tập sinh"
+                mt={25}
+                {...form.getInputProps('isIntern', { type: 'checkbox' })}
+              />
             </Group>
-          </Stack>
-        </Box>
 
-        {/* Ngày hôm nay */}
-        <DateInput
-          label="Ngày hôm nay"
-          value={todayDate}
-          onChange={(value: Date | null) => setTodayDate(value || new Date())}
-          valueFormat="DD/MM/YYYY"
-          maxDate={new Date()}
-          clearable={false}
-          disabled
-        />
+            {form.values.isIntern && (
+              <Select
+                allowDeselect={false}
+                label="Chọn thực tập sinh"
+                placeholder="Chọn thực tập sinh"
+                data={
+                  internsData?.results.map((intern) => ({
+                    value: intern.full_name,
+                    label: `${intern.full_name} - ${intern.uni_code}`,
+                  })) || []
+                }
+                withAsterisk
+                disabled={isLoading}
+                {...form.getInputProps('internName')}
+              />
+            )}
 
-        <Box>
-          <Stack gap="xs">
-            <Group justify="space-between">
-              <Group>
-                <Button
-                  variant="light"
-                  size="xs"
-                  leftSection={<IconPlus size={14} />}
-                  onClick={() => handleAddTask(todayTasks, setTodayTasks, todayDate)}
-                >
-                  Thêm task
-                </Button>
-                <Button
-                  variant="light"
-                  size="xs"
-                  leftSection={<IconCalendarOff size={14} />}
-                  onClick={() => setShowAbsenceModal('today')}
-                >
-                  Nghỉ
-                </Button>
-              </Group>
-              <Group>
-                {todayAbsence && (
-                  <Group gap="xs">
-                    <Badge
-                      variant="light"
-                      color={
-                        todayAbsence.type === AbsenceType.SCHEDULED
-                          ? 'blue'
-                          : todayAbsence.type === AbsenceType.EXCUSED
-                            ? 'green'
-                            : 'red'
-                      }
-                    >
-                      Nghỉ{' '}
-                      {todayAbsence.type === AbsenceType.SCHEDULED
-                        ? 'theo lịch'
-                        : todayAbsence.type === AbsenceType.EXCUSED
-                          ? 'có phép'
-                          : 'không phép'}
-                      : {todayAbsence.reason}
-                    </Badge>
-                    <ActionIcon
-                      variant="subtle"
-                      color="gray"
-                      size="sm"
-                      onClick={() => setTodayAbsence(undefined)}
-                    >
-                      <IconX size={14} />
-                    </ActionIcon>
-                  </Group>
-                )}
-                <Checkbox
-                  label="Chờ task"
-                  checked={waitingForTask}
-                  onChange={(e) => setWaitingForTask(e.currentTarget.checked)}
+            <Stack gap="md">
+              <Stack gap="xs">
+                <DateInput
+                  label="Ngày trước"
+                  value={form.values.yesterdayDate}
+                  onChange={(date: Date | null) =>
+                    date && form.setFieldValue('yesterdayDate', date)
+                  }
+                  disabled
+                  valueFormat="DD/MM/YYYY"
+                  maxDate={new Date()}
                 />
-              </Group>
-            </Group>
-          </Stack>
-        </Box>
+                <DaySection
+                  date={form.values.yesterdayDate}
+                  tasks={form.values.yesterdayTasks}
+                  absence={form.values.yesterdayAbsence}
+                  waitingForTask={form.values.waitingForTask}
+                  onAddTask={() => handleAddTask(form.values.yesterdayDate)}
+                  onAddAbsence={() => handleAddAbsence(form.values.yesterdayDate)}
+                  onRemoveAbsence={() => form.setFieldValue('yesterdayAbsence', undefined)}
+                  onWaitingForTaskChange={(checked) =>
+                    handleWaitingForTaskChange(form.values.yesterdayDate, checked)
+                  }
+                  label="Hôm qua"
+                />
+              </Stack>
 
-        <Modal
-          opened={showAbsenceModal !== null}
-          onClose={() => setShowAbsenceModal(null)}
-          title="Thông tin nghỉ"
-          centered
-        >
-          <Stack>
-            <Select
-              label="Loại nghỉ"
-              allowDeselect={false}
-              value={absenceType}
-              onChange={(value) => {
-                setAbsenceType(value as AbsenceType);
-                setTouched((prev) => ({ ...prev, absenceType: true }));
-              }}
-              data={[
-                { value: AbsenceType.SCHEDULED, label: 'Nghỉ theo lịch' },
-                { value: AbsenceType.EXCUSED, label: 'Nghỉ có phép' },
-                { value: AbsenceType.UNEXCUSED, label: 'Nghỉ không phép' },
-              ]}
-              withAsterisk
-              error={touched.absenceType && !absenceType && 'Vui lòng chọn loại nghỉ'}
-            />
-            <Autocomplete
-              label="Lý do"
-              placeholder="Chọn hoặc nhập lý do"
-              value={absenceReason}
-              onChange={(value) => {
-                setAbsenceReason(value);
-                setTouched((prev) => ({ ...prev, absenceReason: true }));
-              }}
-              data={absenceReasons}
-              withAsterisk
-              error={touched.absenceReason && !absenceReason && 'Vui lòng nhập lý do nghỉ'}
-            />
-            <Button onClick={handleAbsenceSubmit} disabled={!absenceType || !absenceReason}>
-              Xác nhận
-            </Button>
+              <Stack gap="xs">
+                <DateInput
+                  label="Ngày hôm nay"
+                  value={form.values.todayDate}
+                  onChange={(date: Date | null) => date && form.setFieldValue('todayDate', date)}
+                  disabled
+                  valueFormat="DD/MM/YYYY"
+                  maxDate={new Date()}
+                />
+                <DaySection
+                  date={form.values.todayDate}
+                  tasks={form.values.todayTasks}
+                  absence={form.values.todayAbsence}
+                  waitingForTask={form.values.waitingForTask}
+                  onAddTask={() => handleAddTask(form.values.todayDate)}
+                  onAddAbsence={() => handleAddAbsence(form.values.todayDate)}
+                  onRemoveAbsence={() => form.setFieldValue('todayAbsence', undefined)}
+                  onWaitingForTaskChange={(checked) =>
+                    handleWaitingForTaskChange(form.values.todayDate, checked)
+                  }
+                  label="Hôm nay"
+                />
+              </Stack>
+            </Stack>
           </Stack>
-        </Modal>
+        </Paper>
 
-        <Modal
+        <TaskModal
           opened={showAddTaskModal}
           onClose={() => setShowAddTaskModal(false)}
-          title="Thêm task mới"
-          centered
-        >
-          <TaskForm
-            task={newTask}
-            index={0}
-            onChange={(_, field, value) => setNewTask({ ...newTask, [field]: value })}
-            onDelete={() => setShowAddTaskModal(false)}
-            label="Task mới"
-          />
-          <Group justify="flex-end" mt="md">
-            <Button variant="light" onClick={() => setShowAddTaskModal(false)}>
-              Hủy
-            </Button>
-            <Button onClick={handleConfirmAddTask}>Thêm</Button>
-          </Group>
-        </Modal>
+          onSubmit={handleConfirmAddTask}
+        />
+
+        <AbsenceModal
+          opened={Boolean(showAbsenceModal)}
+          onClose={() => setShowAbsenceModal(false)}
+          absenceType={form.values.absenceType}
+          setAbsenceType={(type) => form.setFieldValue('absenceType', type)}
+          absenceReason={form.values.absenceReason}
+          setAbsenceReason={(reason) => form.setFieldValue('absenceReason', reason)}
+          onSubmit={handleAbsenceSubmit}
+        />
       </Stack>
     </>
   );
