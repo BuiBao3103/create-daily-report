@@ -18,19 +18,11 @@ import {
 import { DateInput } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import { interns } from '@/Utils/constants/TaskForm.constants';
-import {
-  Absence,
-  AbsenceType,
-  DailyReportData,
-} from '@/Utils/enums/DailyEnum/DailyReportForm.types';
+import { AbsenceType } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
 import { AbsenceModal } from './components/AbsenceModal';
 import { DaySection } from './components/DaySection';
 import { TaskModal } from './components/TaskModal';
-import { DailyReportProvider, useDailyReport } from './context/DailyReportContext';
-
-interface DailyReportFormProps {
-  onSubmit: (data: DailyReportData) => void;
-}
+import { useDailyReport } from './context/DailyReportContext';
 
 function DailyReportFormContent() {
   const { form, updateOutput } = useDailyReport();
@@ -94,8 +86,8 @@ function DailyReportFormContent() {
               placeholder="Chọn thực tập sinh"
               data={
                 interns?.map((intern) => ({
-                value: intern.full_name,
-                label: `${intern.full_name} - ${intern.uni_code}`,
+                  value: intern.full_name,
+                  label: `${intern.full_name} - ${intern.uni_code}`,
                 })) || []
               }
               withAsterisk
@@ -113,16 +105,9 @@ function DailyReportFormContent() {
                 maxDate={new Date()}
               />
               <DaySection
-                date={form.values.yesterdayDate}
-                tasks={form.values.yesterdayTasks}
-                absence={form.values.yesterdayAbsence}
                 waitingForTask={false}
                 onAddTask={() => openYesterdayTaskModal()}
                 onAddAbsence={() => openYesterdayAbsenceModal()}
-                onRemoveAbsence={() => {
-                  form.setFieldValue('yesterdayAbsence', undefined);
-                  updateOutput();
-                }}
                 label="Hôm qua"
               />
               {!form.values.internName && (
@@ -162,16 +147,9 @@ function DailyReportFormContent() {
                 maxDate={new Date()}
               />
               <DaySection
-                date={form.values.todayDate}
-                tasks={form.values.todayTasks}
-                absence={form.values.todayAbsence}
                 waitingForTask={form.values.waitingForTask}
                 onAddTask={() => openTodayTaskModal()}
                 onAddAbsence={() => openTodayAbsenceModal()}
-                onRemoveAbsence={() => {
-                  form.setFieldValue('todayAbsence', undefined);
-                  updateOutput();
-                }}
                 onWaitingForTaskChange={(checked) => {
                   form.setFieldValue('waitingForTask', checked);
                   updateOutput();
@@ -280,10 +258,6 @@ function DailyReportFormContent() {
   );
 }
 
-export function DailyReportForm({ onSubmit }: DailyReportFormProps) {
-  return (
-    <DailyReportProvider onSubmit={onSubmit}>
-      <DailyReportFormContent />
-    </DailyReportProvider>
-  );
+export function DailyReportForm() {
+  return <DailyReportFormContent />;
 }

@@ -5,6 +5,7 @@ import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeTo
 import { DailyReportForm } from '../components/DailyReport/DailyReportForm';
 import { DailyReportOutput } from '../components/DailyReport/DailyReportOutput';
 import { DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
+import { DailyReportProvider } from '../components/DailyReport/context/DailyReportContext';
 
 const fadeIn = keyframes({
   from: { opacity: 0, transform: 'translateY(20px)' },
@@ -71,50 +72,52 @@ export function HomePage() {
         >
           Báo cáo hàng ngày
         </Title>
-        <Grid gutter={0} style={{ height: 'calc(100vh - 30px)', maxHeight: '800px' }}>
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Paper
-              p="md"
-              style={{
-                height: '100%',
-                overflowY: 'auto',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                borderTopLeftRadius: 16,
-                borderBottomLeftRadius: 16,
-                borderTopRightRadius: 0,
-                borderBottomRightRadius: 0,
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                },
-              }}
-            >
-              <DailyReportForm onSubmit={handleSubmit} />
-            </Paper>
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Paper
-              p="md"
-              style={{
-                minHeight: '100%',
-                height: 'auto',
-                overflowY: 'auto',
-                background: 'var(--mantine-color-body)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                borderTopRightRadius: 16,
-                borderBottomRightRadius: 16,
-                borderTopLeftRadius: 0,
-                borderBottomLeftRadius: 0,
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                },
-              }}
-            >
-              <DailyReportOutput data={reportData} />
-            </Paper>
-          </Grid.Col>
-        </Grid>
+        <DailyReportProvider onSubmit={handleSubmit}>
+          <Grid gutter={0} style={{ height: 'calc(100vh - 30px)', maxHeight: '800px' }}>
+            <Grid.Col span={{ base: 12, md: 6 }}>
+              <Paper
+                p="md"
+                style={{
+                  height: '100%',
+                  overflowY: 'auto',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  borderTopLeftRadius: 16,
+                  borderBottomLeftRadius: 16,
+                  borderTopRightRadius: 0,
+                  borderBottomRightRadius: 0,
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  },
+                }}
+              >
+                <DailyReportForm />
+              </Paper>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, md: 6 }}>
+              <Paper
+                p="md"
+                style={{
+                  minHeight: '100%',
+                  height: 'auto',
+                  overflowY: 'auto',
+                  background: 'var(--mantine-color-body)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  borderTopRightRadius: 16,
+                  borderBottomRightRadius: 16,
+                  borderTopLeftRadius: 0,
+                  borderBottomLeftRadius: 0,
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  },
+                }}
+              >
+                <DailyReportOutput data={reportData} />
+              </Paper>
+            </Grid.Col>
+          </Grid>
+        </DailyReportProvider>
       </Container>
     </Box>
   );

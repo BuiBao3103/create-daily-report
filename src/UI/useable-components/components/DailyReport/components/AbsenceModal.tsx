@@ -4,13 +4,13 @@ import { absenceReasons } from '@/Utils/constants/TaskForm.constants';
 import { AbsenceType } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
 
 interface AbsenceModalProps {
-  opened: boolean;
-  onClose: () => void;
-  absenceType: AbsenceType;
-  setAbsenceType: (type: AbsenceType) => void;
-  absenceReason: string;
-  setAbsenceReason: (reason: string) => void;
-  onSubmit: () => void;
+  readonly opened: boolean;
+  readonly onClose: () => void;
+  readonly absenceType: AbsenceType;
+  readonly setAbsenceType: (type: AbsenceType) => void;
+  readonly absenceReason: string;
+  readonly setAbsenceReason: (reason: string) => void;
+  readonly onSubmit: () => void;
 }
 
 export function AbsenceModal({

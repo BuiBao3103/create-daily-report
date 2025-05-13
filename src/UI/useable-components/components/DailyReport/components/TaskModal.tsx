@@ -4,8 +4,7 @@ import {
   Group,
   Modal,
   NumberInput,
-  Paper,
-  Select,
+    Select,
   Stack,
   TextInput,
 } from '@mantine/core';
@@ -14,10 +13,10 @@ import { projects, statuses } from '@/Utils/constants/TaskForm.constants';
 import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
 
 interface TaskModalProps {
-  workDate: Date;
-  opened: boolean;
-  onClose: () => void;
-  onSubmit: (task: Task) => void;
+  readonly workDate: Date;
+  readonly opened: boolean;
+  readonly onClose: () => void;
+  readonly onSubmit: (task: Task) => void;
 }
 
 export function TaskModal({ workDate, opened, onClose, onSubmit }: TaskModalProps) {

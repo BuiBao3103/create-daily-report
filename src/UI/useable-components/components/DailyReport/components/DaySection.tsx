@@ -1,18 +1,12 @@
-import { IconCalendarOff, IconPlus, IconX } from '@tabler/icons-react';
-import { ActionIcon, Badge, Box, Button, Checkbox, Group, Stack } from '@mantine/core';
-import { Absence, AbsenceType } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
-import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
+import { IconCalendarOff, IconPlus } from '@tabler/icons-react';
+import { Box, Button, Checkbox, Group, Stack } from '@mantine/core';
 
 interface DaySectionProps {
-  date: Date;
-  tasks: Task[];
-  absence?: Absence;
-  waitingForTask?: boolean;
-  onAddTask: () => void;
-  onAddAbsence: () => void;
-  onRemoveAbsence: () => void;
-  onWaitingForTaskChange?: (checked: boolean) => void;
-  label: string;
+  readonly waitingForTask?: boolean;
+  readonly onAddTask: () => void;
+  readonly onAddAbsence: () => void;
+  readonly onWaitingForTaskChange?: (checked: boolean) => void;
+  readonly label: string;
 }
 
 export function DaySection({

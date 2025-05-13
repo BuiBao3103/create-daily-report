@@ -1,8 +1,7 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useMemo } from 'react';
 import { useForm } from '@mantine/form';
-import { DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
+import { Absence, DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
 import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
-import { Absence, AbsenceType } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
 
 interface FormValues {
   internName: string;
@@ -20,13 +19,16 @@ interface FormValues {
 interface DailyReportContextType {
   form: ReturnType<typeof useForm<FormValues>>;
   updateOutput: () => void;
+  deleteTask: (taskIndex: number, isToday: boolean) => void;
+  editTask: (taskIndex: number, isToday: boolean, updatedTask: Task) => void;
+  deleteAbsence: (isToday: boolean) => void;
 }
 
 const DailyReportContext = createContext<DailyReportContextType | null>(null);
 
 interface DailyReportProviderProps {
-  children: ReactNode;
-  onSubmit: (data: DailyReportData) => void;
+  readonly children: ReactNode;
+  readonly onSubmit: (data: DailyReportData) => void;
 }
 
 export function DailyReportProvider({ children, onSubmit }: DailyReportProviderProps) {
@@ -71,8 +73,51 @@ export function DailyReportProvider({ children, onSubmit }: DailyReportProviderP
     onSubmit(data);
   };
 
+  const deleteTask = (taskIndex: number, isToday: boolean) => {
+    if (isToday) {
+      const newTasks = form.values.todayTasks.filter((_, index) => index !== taskIndex);
+      form.setFieldValue('todayTasks', newTasks);
+    } else {
+      const newTasks = form.values.yesterdayTasks.filter((_, index) => index !== taskIndex);
+      form.setFieldValue('yesterdayTasks', newTasks);
+    }
+    updateOutput();
+  };
+
+  const editTask = (taskIndex: number, isToday: boolean, updatedTask: Task) => {
+    if (isToday) {
+      const newTasks = [...form.values.todayTasks];
+      newTasks[taskIndex] = updatedTask;
+      form.setFieldValue('todayTasks', newTasks);
+    } else {
+      const newTasks = [...form.values.yesterdayTasks];
+      newTasks[taskIndex] = updatedTask;
+      form.setFieldValue('yesterdayTasks', newTasks);
+    }
+    updateOutput();
+  };
+
+  const deleteAbsence = (isToday: boolean) => {
+    if (isToday) {
+      form.setFieldValue('todayAbsence', undefined);
+    } else {
+      form.setFieldValue('yesterdayAbsence', undefined);
+    }
+    updateOutput();
+  };
+
+  // Update output when form values change
+  useEffect(() => {
+    updateOutput();
+  }, [form.values]);
+
+  const contextValue = useMemo(
+    () => ({ form, updateOutput, deleteTask, editTask, deleteAbsence }),
+    [form, updateOutput, deleteTask, editTask, deleteAbsence]
+  );
+
   return (
-    <DailyReportContext.Provider value={{ form, updateOutput }}>
+    <DailyReportContext.Provider value={contextValue}>
       {children}
     </DailyReportContext.Provider>
   );
@@ -84,4 +129,4 @@ export function useDailyReport() {
     throw new Error('useDailyReport must be used within a DailyReportProvider');
   }
   return context;
-} 
+}

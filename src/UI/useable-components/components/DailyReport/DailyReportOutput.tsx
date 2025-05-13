@@ -24,6 +24,7 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { AbsenceType, DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
+import { useDailyReport } from './context/DailyReportContext';
 
 interface DailyReportOutputProps {
   readonly data?: DailyReportData;
@@ -83,6 +84,7 @@ const formatTextOutput = (data: DailyReportData) => {
 export function DailyReportOutput({ data }: DailyReportOutputProps) {
   const [isTableView, setIsTableView] = useState(true);
   const [copied, setCopied] = useState(false);
+  const { deleteTask, editTask, deleteAbsence } = useDailyReport();
 
   const handleCopy = async () => {
     if (!data) return;
@@ -227,16 +229,28 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                             <Table.Td>{task.content || '-'}</Table.Td>
                             <Table.Td>{task.est_time ? `${task.est_time}h` : '-'}</Table.Td>
                             <Table.Td>{task.act_time ? `${task.act_time}h` : '-'}</Table.Td>
-                            <Table.Td>{task.status}</Table.Td>
+                            <Table.Td>{task.status || '-'}</Table.Td>
                             <Table.Td>
                               <Group gap={4} justify="flex-end">
                                 <Tooltip label="Chỉnh sửa">
-                                  <ActionIcon variant="light" color="blue" size="sm" radius="xl">
+                                  <ActionIcon
+                                    variant="light"
+                                    color="blue"
+                                    size="sm"
+                                    radius="xl"
+                                    onClick={() => editTask(index, false, task)}
+                                  >
                                     <IconEdit size={14} />
                                   </ActionIcon>
                                 </Tooltip>
                                 <Tooltip label="Xóa">
-                                  <ActionIcon variant="light" color="red" size="sm" radius="xl">
+                                  <ActionIcon
+                                    variant="light"
+                                    color="red"
+                                    size="sm"
+                                    radius="xl"
+                                    onClick={() => deleteTask(index, false)}
+                                  >
                                     <IconTrash size={14} />
                                   </ActionIcon>
                                 </Tooltip>
@@ -269,7 +283,19 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                                   : {data.yesterdayAbsence.reason}
                                 </Badge>
                                 <Tooltip label="Xóa">
-                                  <ActionIcon variant="light" color="red" size="sm" radius="xl">
+                                  <ActionIcon
+                                    variant="light"
+                                    color={
+                                      data.yesterdayAbsence.type === AbsenceType.SCHEDULED
+                                        ? 'blue'
+                                        : data.yesterdayAbsence.type === AbsenceType.EXCUSED
+                                          ? 'green'
+                                          : 'red'
+                                    }
+                                    size="sm"
+                                    radius="xl"
+                                    onClick={() => deleteAbsence(false)}
+                                  >
                                     <IconX size={14} />
                                   </ActionIcon>
                                 </Tooltip>
@@ -338,16 +364,28 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                             <Table.Td>{task.content || '-'}</Table.Td>
                             <Table.Td>{task.est_time ? `${task.est_time}h` : '-'}</Table.Td>
                             <Table.Td>{task.act_time ? `${task.act_time}h` : '-'}</Table.Td>
-                            <Table.Td>{task.status}</Table.Td>
+                            <Table.Td>{task.status || '-'}</Table.Td>
                             <Table.Td>
                               <Group gap={4} justify="flex-end">
                                 <Tooltip label="Chỉnh sửa">
-                                  <ActionIcon variant="light" color="blue" size="sm" radius="xl">
+                                  <ActionIcon
+                                    variant="light"
+                                    color="blue"
+                                    size="sm"
+                                    radius="xl"
+                                    onClick={() => editTask(index, true, task)}
+                                  >
                                     <IconEdit size={14} />
                                   </ActionIcon>
                                 </Tooltip>
                                 <Tooltip label="Xóa">
-                                  <ActionIcon variant="light" color="red" size="sm" radius="xl">
+                                  <ActionIcon
+                                    variant="light"
+                                    color="red"
+                                    size="sm"
+                                    radius="xl"
+                                    onClick={() => deleteTask(index, true)}
+                                  >
                                     <IconTrash size={14} />
                                   </ActionIcon>
                                 </Tooltip>
@@ -380,7 +418,19 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                                   : {data.todayAbsence.reason}
                                 </Badge>
                                 <Tooltip label="Xóa">
-                                  <ActionIcon variant="light" color="red" size="sm" radius="xl">
+                                  <ActionIcon
+                                    variant="light"
+                                    color={
+                                      data.todayAbsence.type === AbsenceType.SCHEDULED
+                                        ? 'blue'
+                                        : data.todayAbsence.type === AbsenceType.EXCUSED
+                                          ? 'green'
+                                          : 'red'
+                                    }
+                                    size="sm"
+                                    radius="xl"
+                                    onClick={() => deleteAbsence(true)}
+                                  >
                                     <IconX size={14} />
                                   </ActionIcon>
                                 </Tooltip>
