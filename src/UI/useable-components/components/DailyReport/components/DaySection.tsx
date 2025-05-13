@@ -16,16 +16,14 @@ interface DaySectionProps {
 }
 
 export function DaySection({
-  date,
-  tasks,
-  absence,
   waitingForTask,
   onAddTask,
   onAddAbsence,
-  onRemoveAbsence,
   onWaitingForTaskChange,
   label,
 }: DaySectionProps) {
+  const isToday = label === 'Hôm nay';
+
   return (
     <Box>
       <Stack gap="xs">
@@ -49,32 +47,7 @@ export function DaySection({
             </Button>
           </Group>
           <Group>
-            {absence && (
-              <Group gap="xs">
-                <Badge
-                  variant="light"
-                  color={
-                    absence.type === AbsenceType.SCHEDULED
-                      ? 'blue'
-                      : absence.type === AbsenceType.EXCUSED
-                        ? 'green'
-                        : 'red'
-                  }
-                >
-                  Nghỉ{' '}
-                  {absence.type === AbsenceType.SCHEDULED
-                    ? 'theo lịch'
-                    : absence.type === AbsenceType.EXCUSED
-                      ? 'có phép'
-                      : 'không phép'}
-                  : {absence.reason}
-                </Badge>
-                <ActionIcon variant="subtle" color="gray" size="sm" onClick={onRemoveAbsence}>
-                  <IconX size={14} />
-                </ActionIcon>
-              </Group>
-            )}
-            {onWaitingForTaskChange && (
+            {isToday && onWaitingForTaskChange && (
               <Checkbox
                 label="Chờ task"
                 checked={waitingForTask}

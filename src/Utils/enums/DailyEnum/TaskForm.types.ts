@@ -5,7 +5,7 @@ export interface Task {
   est_time?: number;
   act_time?: number;
   status: string;
-  workDate?: string;
+  workDate?: Date;
 }
 
 export interface TaskFormProps {

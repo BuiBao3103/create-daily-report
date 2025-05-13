@@ -11,8 +11,28 @@ const fadeIn = keyframes({
   to: { opacity: 1, transform: 'translateY(0)' },
 });
 
+const getDefaultReportData = (): DailyReportData => {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (today.getDay() === 1) {
+    yesterday.setDate(today.getDate() - 3);
+  }
+
+  return {
+    date: today,
+    intern_name: '',
+    is_intern: false,
+    yesterdayDate: yesterday,
+    todayDate: today,
+    yesterdayTasks: [],
+    todayTasks: [],
+    waitingForTask: false,
+  };
+};
+
 export function HomePage() {
-  const [reportData, setReportData] = useState<DailyReportData | undefined>();
+  const [reportData, setReportData] = useState<DailyReportData>(getDefaultReportData());
 
   const handleSubmit = (data: DailyReportData) => {
     setReportData(data);

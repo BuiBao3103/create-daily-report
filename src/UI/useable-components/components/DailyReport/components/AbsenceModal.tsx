@@ -1,7 +1,7 @@
 import { Autocomplete, Button, Modal, Select, Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { AbsenceType } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
 import { absenceReasons } from '@/Utils/constants/TaskForm.constants';
+import { AbsenceType } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
 
 interface AbsenceModalProps {
   opened: boolean;
@@ -41,6 +41,7 @@ export function AbsenceModal({
     setAbsenceType(form.values.type);
     setAbsenceReason(form.values.reason);
     onSubmit();
+    onClose();
   };
 
   return (
@@ -52,7 +53,6 @@ export function AbsenceModal({
           value={form.values.type}
           onChange={(value) => {
             form.setFieldValue('type', value as AbsenceType);
-            setAbsenceType(value as AbsenceType);
           }}
           data={[
             { value: AbsenceType.SCHEDULED, label: 'Nghỉ theo lịch' },
@@ -68,7 +68,6 @@ export function AbsenceModal({
           value={form.values.reason}
           onChange={(value) => {
             form.setFieldValue('reason', value);
-            setAbsenceReason(value);
           }}
           data={absenceReasons}
           withAsterisk

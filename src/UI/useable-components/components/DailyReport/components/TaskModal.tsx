@@ -14,18 +14,20 @@ import { projects, statuses } from '@/Utils/constants/TaskForm.constants';
 import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
 
 interface TaskModalProps {
+  workDate: Date;
   opened: boolean;
   onClose: () => void;
   onSubmit: (task: Task) => void;
 }
 
-export function TaskModal({ opened, onClose, onSubmit }: TaskModalProps) {
+export function TaskModal({ workDate, opened, onClose, onSubmit }: TaskModalProps) {
   const form = useForm<Task>({
     initialValues: {
+      workDate: workDate,
       content: '',
       task_id: '',
       project: '',
-      est_time: 0,
+      est_time: undefined,
       act_time: undefined,
       status: 'To Do',
     },
