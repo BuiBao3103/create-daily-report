@@ -4,24 +4,27 @@ import {
   Group,
   Modal,
   NumberInput,
-    Select,
+  Select,
   Stack,
   TextInput,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { projects, statuses } from '@/Utils/constants/TaskForm.constants';
 import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
+import { useEffect } from 'react';
 
 interface TaskModalProps {
   readonly workDate: Date;
   readonly opened: boolean;
   readonly onClose: () => void;
   readonly onSubmit: (task: Task) => void;
+  readonly initialValues?: Task;
+  readonly isEdit?: boolean;
 }
 
-export function TaskModal({ workDate, opened, onClose, onSubmit }: TaskModalProps) {
+export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, isEdit = false }: TaskModalProps) {
   const form = useForm<Task>({
-    initialValues: {
+    initialValues: initialValues || {
       workDate: workDate,
       content: '',
       task_id: '',
@@ -37,6 +40,12 @@ export function TaskModal({ workDate, opened, onClose, onSubmit }: TaskModalProp
     },
   });
 
+  useEffect(() => {
+    if (initialValues) {
+      form.setValues(initialValues);
+    }
+  }, [initialValues, opened]);
+
   const handleSubmit = () => {
     const validationResult = form.validate();
     if (validationResult.hasErrors) {
@@ -48,7 +57,13 @@ export function TaskModal({ workDate, opened, onClose, onSubmit }: TaskModalProp
   };
 
   return (
-    <Modal size={'lg'} opened={opened} onClose={onClose} title="Thêm task mới" centered>
+    <Modal 
+      size={'lg'} 
+      opened={opened} 
+      onClose={onClose} 
+      title={isEdit ? "Chỉnh sửa task" : "Thêm task mới"} 
+      centered
+    >
       <Stack gap="xs">
         <Group grow>
           <TextInput
@@ -101,7 +116,7 @@ export function TaskModal({ workDate, opened, onClose, onSubmit }: TaskModalProp
           Hủy
         </Button>
         <Button onClick={handleSubmit} disabled={!form.isValid()}>
-          Thêm
+          {isEdit ? 'Cập nhật' : 'Thêm'}
         </Button>
       </Group>
     </Modal>

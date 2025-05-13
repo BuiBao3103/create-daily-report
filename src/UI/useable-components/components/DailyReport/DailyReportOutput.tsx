@@ -24,6 +24,8 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { AbsenceType, DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
+import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
+import { TaskModal } from './components/TaskModal';
 import { useDailyReport } from './context/DailyReportContext';
 
 interface DailyReportOutputProps {
@@ -85,6 +87,9 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
   const [isTableView, setIsTableView] = useState(true);
   const [copied, setCopied] = useState(false);
   const { deleteTask, editTask, deleteAbsence } = useDailyReport();
+  const [editModalOpened, setEditModalOpened] = useState(false);
+  const [currentTask, setCurrentTask] = useState<Task | null>(null);
+  const [isTodayTask, setIsTodayTask] = useState(true);
 
   const handleCopy = async () => {
     if (!data) return;
@@ -95,6 +100,26 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
     } catch (error) {
       console.error('Không thể sao chép: ', error);
     }
+  };
+
+  const handleEditClick = (task: Task, index: number, isToday: boolean) => {
+    setCurrentTask(task);
+    setIsTodayTask(isToday);
+    setEditModalOpened(true);
+  };
+
+  const handleEditSubmit = (updatedTask: Task) => {
+    if (currentTask) {
+      const index = isTodayTask
+        ? (data?.todayTasks.findIndex((t) => t === currentTask) ?? -1)
+        : (data?.yesterdayTasks.findIndex((t) => t === currentTask) ?? -1);
+
+      if (index !== -1) {
+        editTask(index, isTodayTask, updatedTask);
+      }
+    }
+    setEditModalOpened(false);
+    setCurrentTask(null);
   };
 
   return (
@@ -231,14 +256,14 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                             <Table.Td>{task.act_time ? `${task.act_time}h` : '-'}</Table.Td>
                             <Table.Td>{task.status || '-'}</Table.Td>
                             <Table.Td>
-                              <Group gap={4} justify="flex-end">
+                              <Flex gap={4} justify="flex-end">
                                 <Tooltip label="Chỉnh sửa">
                                   <ActionIcon
                                     variant="light"
-                                    color="blue"
+                                    color="yellow"
                                     size="sm"
                                     radius="xl"
-                                    onClick={() => editTask(index, false, task)}
+                                    onClick={() => handleEditClick(task, index, false)}
                                   >
                                     <IconEdit size={14} />
                                   </ActionIcon>
@@ -254,7 +279,7 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                                     <IconTrash size={14} />
                                   </ActionIcon>
                                 </Tooltip>
-                              </Group>
+                              </Flex>
                             </Table.Td>
                           </Table.Tr>
                         ))}
@@ -366,14 +391,14 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                             <Table.Td>{task.act_time ? `${task.act_time}h` : '-'}</Table.Td>
                             <Table.Td>{task.status || '-'}</Table.Td>
                             <Table.Td>
-                              <Group gap={4} justify="flex-end">
+                              <Flex gap={4} justify="flex-end">
                                 <Tooltip label="Chỉnh sửa">
                                   <ActionIcon
                                     variant="light"
-                                    color="blue"
+                                    color="yellow"
                                     size="sm"
                                     radius="xl"
-                                    onClick={() => editTask(index, true, task)}
+                                    onClick={() => handleEditClick(task, index, true)}
                                   >
                                     <IconEdit size={14} />
                                   </ActionIcon>
@@ -389,7 +414,7 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                                     <IconTrash size={14} />
                                   </ActionIcon>
                                 </Tooltip>
-                              </Group>
+                              </Flex>
                             </Table.Td>
                           </Table.Tr>
                         ))}
@@ -461,6 +486,20 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
           </Stack>
         )}
       </Stack>
+
+      {data && (
+        <TaskModal
+          workDate={data.date}
+          opened={editModalOpened}
+          onClose={() => {
+            setEditModalOpened(false);
+            setCurrentTask(null);
+          }}
+          onSubmit={handleEditSubmit}
+          initialValues={currentTask || undefined}
+          isEdit={true}
+        />
+      )}
     </Paper>
   );
 }
