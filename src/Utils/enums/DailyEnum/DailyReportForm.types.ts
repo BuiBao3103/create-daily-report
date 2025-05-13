@@ -1,9 +1,9 @@
-import { Task } from './TaskForm/TaskForm.types';
+import { Task } from './TaskForm.types';
 
 export enum AbsenceType {
   EXCUSED = 'EXCUSED',
   UNEXCUSED = 'UNEXCUSED',
-  SCHEDULED = 'SCHEDULED'
+  SCHEDULED = 'SCHEDULED',
 }
 
 export interface Absence {
@@ -12,11 +12,11 @@ export interface Absence {
 }
 
 export interface DailyReportData {
-  date: string;
+  date: Date;
   intern_name: string;
   is_intern: boolean;
-  yesterdayLabel: string;
-  todayLabel: string;
+  yesterdayDate: Date;
+  todayDate: Date;
   yesterdayTasks: Task[];
   todayTasks: Task[];
   waitingForTask: boolean;
@@ -26,4 +26,4 @@ export interface DailyReportData {
 
 export interface DailyReportFormProps {
   onSubmit: (data: DailyReportData) => void;
-} 
+}

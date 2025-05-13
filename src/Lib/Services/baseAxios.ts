@@ -8,4 +8,4 @@ const baseAxios = axios.create({
   },
 });
 
-export default baseAxios; 
+export default baseAxios;
