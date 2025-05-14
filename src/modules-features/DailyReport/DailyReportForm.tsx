@@ -17,14 +17,18 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
-import { interns } from '@/constants/TaskForm.constants';
+// import { interns } from '@/constants/TaskForm.constants';
 import { AbsenceType } from '@/types/DailyReportForm.types';
 import { AbsenceModal } from './AbsenceModal';
 import { DaySection } from './DaySection';
 import { TaskModal } from './TaskModal';
 import { useDailyReport } from '../../context/DailyReportContext';
+import useInterns from '@/hooks/use_interns';
 
 function DailyReportFormContent() {
+  const query = useInterns({
+    params: ""
+  })
   const { form, updateOutput } = useDailyReport();
   const [yesterdayTaskModal, { open: openYesterdayTaskModal, close: closeYesterdayTaskModal }] =
     useDisclosure(false);
@@ -60,7 +64,7 @@ function DailyReportFormContent() {
               placeholder="Nhập họ và tên"
               disabled={form.values.isIntern}
               withAsterisk
-              {...form.getInputProps('internName')}
+              {...form.getInputProps('full_name')}
             />
             <DateInput
               label="Ngày báo cáo"
@@ -85,13 +89,17 @@ function DailyReportFormContent() {
               label="Chọn thực tập sinh"
               placeholder="Chọn thực tập sinh"
               data={
-                interns?.map((intern) => ({
+                // interns?.data?.results?.map((intern) => ({
+                //   value: intern.full_name,
+                //   label: `${intern.full_name} - ${intern.uni_code}`,
+                // })) || []
+                (query?.data?.results || []).map((intern) => ({
                   value: intern.full_name,
                   label: `${intern.full_name} - ${intern.uni_code}`,
                 })) || []
               }
               withAsterisk
-              {...form.getInputProps('internName')}
+              {...form.getInputProps('full_name')}
             />
           )}
 
