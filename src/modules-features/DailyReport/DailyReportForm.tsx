@@ -64,7 +64,7 @@ function DailyReportFormContent() {
               placeholder="Nhập họ và tên"
               disabled={form.values.isIntern}
               withAsterisk
-              {...form.getInputProps('full_name')}
+              {...form.getInputProps('internName')}
             />
             <DateInput
               label="Ngày báo cáo"
@@ -99,7 +99,7 @@ function DailyReportFormContent() {
                 })) || []
               }
               withAsterisk
-              {...form.getInputProps('full_name')}
+              {...form.getInputProps('internName')}
             />
           )}
 
