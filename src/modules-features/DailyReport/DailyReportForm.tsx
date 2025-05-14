@@ -17,12 +17,12 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
-import { interns } from '@/Utils/constants/TaskForm.constants';
-import { AbsenceType } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
-import { AbsenceModal } from './components/AbsenceModal';
-import { DaySection } from './components/DaySection';
-import { TaskModal } from './components/TaskModal';
-import { useDailyReport } from './context/DailyReportContext';
+import { interns } from '@/constants/TaskForm.constants';
+import { AbsenceType } from '@/types/DailyReportForm.types';
+import { AbsenceModal } from './AbsenceModal';
+import { DaySection } from './DaySection';
+import { TaskModal } from './TaskModal';
+import { useDailyReport } from '../../context/DailyReportContext';
 
 function DailyReportFormContent() {
   const { form, updateOutput } = useDailyReport();

@@ -9,8 +9,8 @@ import {
   TextInput,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { projects, statuses } from '@/Utils/constants/TaskForm.constants';
-import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
+import { projects, statuses } from '@/constants/TaskForm.constants';
+import { Task } from '@/types/TaskForm.types';
 import { useEffect } from 'react';
 
 interface TaskModalProps {
@@ -57,11 +57,11 @@ export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, 
   };
 
   return (
-    <Modal 
-      size={'lg'} 
-      opened={opened} 
-      onClose={onClose} 
-      title={isEdit ? "Chỉnh sửa task" : "Thêm task mới"} 
+    <Modal
+      size={'lg'}
+      opened={opened}
+      onClose={onClose}
+      title={isEdit ? "Chỉnh sửa task" : "Thêm task mới"}
       centered
     >
       <Stack gap="xs">

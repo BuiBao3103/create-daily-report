@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { keyframes } from '@emotion/react';
 import { Box, Container, Grid, Paper, Title } from '@mantine/core';
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
-import { DailyReportForm } from '../components/DailyReport/DailyReportForm';
-import { DailyReportOutput } from '../components/DailyReport/DailyReportOutput';
-import { DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
-import { DailyReportProvider } from '../components/DailyReport/context/DailyReportContext';
+import { DailyReportForm } from '../modules-features/DailyReport/DailyReportForm';
+import { DailyReportOutput } from '../modules-features/DailyReport/DailyReportOutput';
+import { DailyReportData } from '@/types/DailyReportForm.types';
+import { DailyReportProvider } from '../context/DailyReportContext';
 
 const fadeIn = keyframes({
   from: { opacity: 0, transform: 'translateY(20px)' },

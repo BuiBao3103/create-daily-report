@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useContext, useEffect, useMemo } from 'react';
 import { useForm } from '@mantine/form';
-import { Absence, DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
-import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
+import { Absence, DailyReportData } from '@/types/DailyReportForm.types';
+import { Task } from '@/types/TaskForm.types';
 
 interface FormValues {
   internName: string;

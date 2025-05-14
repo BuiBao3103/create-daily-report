@@ -23,10 +23,10 @@ import {
   ThemeIcon,
   Tooltip,
 } from '@mantine/core';
-import { AbsenceType, DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
-import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
-import { TaskModal } from './components/TaskModal';
-import { useDailyReport } from './context/DailyReportContext';
+import { AbsenceType, DailyReportData } from '@/types/DailyReportForm.types';
+import { Task } from '@/types/TaskForm.types';
+import { TaskModal } from './TaskModal';
+import { useDailyReport } from '../../context/DailyReportContext';
 
 interface DailyReportOutputProps {
   readonly data?: DailyReportData;

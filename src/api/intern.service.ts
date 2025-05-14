@@ -1,5 +1,5 @@
 import axios from './baseAxios';
-import { InternsResponse } from '@/Utils/types/intern.types';
+import { InternsResponse } from '@/types/intern.types';
 
 const BASE_URL = 'http://127.0.0.1:8000/api';
 

@@ -1,7 +1,7 @@
 import { Autocomplete, Button, Modal, Select, Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { absenceReasons } from '@/Utils/constants/TaskForm.constants';
-import { AbsenceType } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
+import { absenceReasons } from '@/constants/TaskForm.constants';
+import { AbsenceType } from '@/types/DailyReportForm.types';
 
 interface AbsenceModalProps {
   readonly opened: boolean;
