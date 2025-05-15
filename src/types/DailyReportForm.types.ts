@@ -13,6 +13,7 @@ export interface Absence {
 
 export interface DailyReportData {
   date: Date;
+  intern_id?: number;
   intern_name: string;
   is_intern: boolean;
   yesterdayDate: Date;

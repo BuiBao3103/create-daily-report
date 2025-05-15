@@ -94,12 +94,12 @@ function DailyReportFormContent() {
                 //   label: `${intern.full_name} - ${intern.uni_code}`,
                 // })) || []
                 (query?.data?.results || []).map((intern) => ({
-                  value: intern.full_name,
+                  value: intern.id.toString(),
                   label: `${intern.full_name} - ${intern.uni_code}`,
                 })) || []
               }
               withAsterisk
-              {...form.getInputProps('internName')}
+              {...form.getInputProps('internID')}
             />
           )}
 
@@ -118,7 +118,7 @@ function DailyReportFormContent() {
                 onAddAbsence={() => openYesterdayAbsenceModal()}
                 label="Hôm qua"
               />
-              {!form.values.internName && (
+              {!form.values.internID && (
                 <MantinePaper
                   pos="absolute"
                   top={0}
@@ -164,7 +164,7 @@ function DailyReportFormContent() {
                 }}
                 label="Hôm nay"
               />
-              {!form.values.internName && (
+              {!form.values.internID && (
                 <MantinePaper
                   pos="absolute"
                   top={0}

@@ -4,6 +4,7 @@ import { Absence, DailyReportData } from '@/types/DailyReportForm.types';
 import { Task } from '@/types/TaskForm.types';
 
 interface FormValues {
+  internID?: number;
   internName: string;
   date: Date;
   isIntern: boolean;
@@ -34,6 +35,7 @@ interface DailyReportProviderProps {
 export function DailyReportProvider({ children, onSubmit }: DailyReportProviderProps) {
   const form = useForm<FormValues>({
     initialValues: {
+      internID: undefined,
       internName: '',
       date: new Date(),
       isIntern: false,
@@ -60,6 +62,7 @@ export function DailyReportProvider({ children, onSubmit }: DailyReportProviderP
   const updateOutput = () => {
     const data: DailyReportData = {
       date: form.values.date,
+      intern_id: form.values.internID,
       intern_name: form.values.internName,
       is_intern: form.values.isIntern,
       yesterdayDate: form.values.yesterdayDate,

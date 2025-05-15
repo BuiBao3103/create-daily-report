@@ -12,6 +12,8 @@ import { useForm } from '@mantine/form';
 import { projects, statuses } from '@/constants/TaskForm.constants';
 import { Task } from '@/types/TaskForm.types';
 import { useEffect } from 'react';
+import { useDailyReport } from '@/context/DailyReportContext';
+import baseAxios from '@/api/baseAxios';
 
 interface TaskModalProps {
   readonly workDate: Date;
@@ -23,15 +25,17 @@ interface TaskModalProps {
 }
 
 export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, isEdit = false }: TaskModalProps) {
-  const form = useForm<Task>({
+  const { form, updateOutput } = useDailyReport();
+  const formTask = useForm<Task>({
     initialValues: initialValues || {
-      workDate: workDate,
+      date: workDate,
       content: '',
       task_id: '',
       project: '',
       est_time: undefined,
       act_time: undefined,
       status: 'To Do',
+      intern: form.getValues().internID ?? null
     },
     validate: {
       content: (value) => (value.trim().length > 0 ? null : 'Vui lòng nhập nội dung công việc'),
@@ -41,20 +45,31 @@ export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, 
   });
 
   useEffect(() => {
-    if (initialValues) {
-      form.setValues(initialValues);
-    }
-  }, [initialValues, opened]);
+    formTask.setValues({ ...formTask.values, intern: form.getValues().internID ?? null });
+  }, [opened]);
 
-  const handleSubmit = () => {
-    const validationResult = form.validate();
-    if (validationResult.hasErrors) {
-      return;
-    }
-    onSubmit(form.values);
-    form.reset();
-    onClose();
+  const handleSubmit = async () => {
+  const validationResult = formTask.validate();
+  if (validationResult.hasErrors) {
+    return;
+  }
+
+  // Chuyển ngày về định dạng chuỗi 'YYYY-MM-DD'
+  const formattedDate = workDate.toISOString().split('T')[0];
+
+  const valuesToSubmit = {
+    ...formTask.values,
+    date: formattedDate,
   };
+
+  console.log(valuesToSubmit);
+  await baseAxios.post('/api/tasks/', valuesToSubmit);
+
+  onSubmit(formTask.values);
+  formTask.reset();
+  onClose();
+};
+
 
   return (
     <Modal
@@ -69,14 +84,14 @@ export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, 
           <TextInput
             label="Task ID"
             placeholder="Nhập task ID"
-            {...form.getInputProps('task_id')}
+            {...formTask.getInputProps('task_id')}
           />
           <Autocomplete
             label="Dự án"
             placeholder="Chọn hoặc nhập dự án"
             data={projects}
             comboboxProps={{ withinPortal: true }}
-            {...form.getInputProps('project')}
+            {...formTask.getInputProps('project')}
           />
         </Group>
 
@@ -84,7 +99,7 @@ export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, 
           label="Nội dung công việc"
           placeholder="Nhập nội dung công việc"
           withAsterisk
-          {...form.getInputProps('content')}
+          {...formTask.getInputProps('content')}
         />
 
         <Group grow>
@@ -93,13 +108,13 @@ export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, 
             placeholder="Nhập thời gian dự kiến"
             min={0}
             withAsterisk
-            {...form.getInputProps('est_time')}
+            {...formTask.getInputProps('est_time')}
           />
           <NumberInput
             label="Thời gian thực tế (giờ)"
             placeholder="Nhập thời gian thực tế"
             min={0}
-            {...form.getInputProps('act_time')}
+            {...formTask.getInputProps('act_time')}
           />
           <Select
             label="Trạng thái"
@@ -107,7 +122,7 @@ export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, 
             data={statuses}
             withAsterisk
             allowDeselect={false}
-            {...form.getInputProps('status')}
+            {...formTask.getInputProps('status')}
           />
         </Group>
       </Stack>
@@ -115,7 +130,7 @@ export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, 
         <Button variant="light" onClick={onClose}>
           Hủy
         </Button>
-        <Button onClick={handleSubmit} disabled={!form.isValid()}>
+        <Button onClick={handleSubmit} disabled={!formTask.isValid()}>
           {isEdit ? 'Cập nhật' : 'Thêm'}
         </Button>
       </Group>
