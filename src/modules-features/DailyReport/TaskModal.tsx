@@ -1,19 +1,12 @@
 import { useEffect } from 'react';
-import {
-  Autocomplete,
-  Button,
-  Group,
-  Modal,
-  NumberInput,
-  Select,
-  Stack,
-  TextInput,
-} from '@mantine/core';
+import { Autocomplete, Button, Group, Modal, NumberInput, Select, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import baseAxios from '@/api/baseAxios';
 import { projects, statuses } from '@/constants/TaskForm.constants';
 import { useDailyReport } from '@/context/DailyReportContext';
 import { Task } from '@/interfaces/task.types';
+import { addOrCreateTask } from '@/hooks/use_tasks';
+import { QueryClient } from '@tanstack/react-query';
 
 interface TaskModalProps {
   readonly workDate: string;
@@ -33,6 +26,13 @@ export function TaskModal({
   isEdit = false,
 }: TaskModalProps) {
   const { intern } = useDailyReport();
+  const mutation = addOrCreateTask({
+  options: {
+    onSuccess: () => {
+      onSubmit();
+    }
+  }
+});
   const formTask = useForm<Omit<Task, 'date'>>({
     initialValues: initialValues || {
       content: '',
@@ -71,6 +71,9 @@ export function TaskModal({
       title={isEdit ? 'Chỉnh sửa task' : 'Thêm task mới'}
       centered
     >
+      <form onSubmit={formTask.onSubmit(values => {
+        mutation.mutate([values]);
+      })}>
       <Stack gap="xs">
         <Group grow>
           <TextInput
@@ -126,6 +129,7 @@ export function TaskModal({
           {isEdit ? 'Cập nhật' : 'Thêm'}
         </Button>
       </Group>
+      </form>
     </Modal>
   );
 }
