@@ -526,10 +526,10 @@
   resolved "https://registry.npmjs.org/@kurkle/color/-/color-0.3.4.tgz"
   integrity sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w==
 
-"@mantine/core@^7.17.7", "@mantine/core@7.17.7":
-  version "7.17.7"
-  resolved "https://registry.npmjs.org/@mantine/core/-/core-7.17.7.tgz"
-  integrity sha512-JMyV4/jPATXxmE31g8TJxsrH7XvdrA5pwT4gg25zBl1KE5vLBpBLLjsHG728+bDKuf+bDV+8lw+1kqgW7FcplQ==
+"@mantine/core@^8.0.1", "@mantine/core@8.0.1":
+  version "8.0.1"
+  resolved "https://registry.npmjs.org/@mantine/core/-/core-8.0.1.tgz"
+  integrity sha512-4ezaxKjChSPtawamQ3KrJq+x506uTouXlL0Z5fP+t105KnyxMrAJUENhbh2ivD4pq9Zh1BFiD9IWzyu3IXFR8w==
   dependencies:
     "@floating-ui/react" "^0.26.28"
     clsx "^2.1.1"
@@ -538,25 +538,25 @@
     react-textarea-autosize "8.5.9"
     type-fest "^4.27.0"
 
-"@mantine/dates@^7.17.7":
-  version "7.17.7"
-  resolved "https://registry.npmjs.org/@mantine/dates/-/dates-7.17.7.tgz"
-  integrity sha512-/F3QteV5Sb5H0zVkU7ZyKdlISYWngdViNLqmredJo8296ukLTsRPr/iIfuYSm3hy3wEWyW5/dWzNPVr1L5cyQg==
+"@mantine/dates@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.npmjs.org/@mantine/dates/-/dates-8.0.1.tgz"
+  integrity sha512-YCmV5jiGE9Ts2uhNS217IA1Hd5kAa8oaEtfnU0bS1sL36zKEf2s6elmzY718XdF8tFil0jJWAj0jiCrA3/udMg==
   dependencies:
     clsx "^2.1.1"
 
-"@mantine/form@^8.0.0":
-  version "8.0.0"
-  resolved "https://registry.npmjs.org/@mantine/form/-/form-8.0.0.tgz"
-  integrity sha512-ErbbEFMEiRsK2Rn0jmFE5ohNJXHSMSbuJsL2vDUVsbIaXo6svw6ockw1WWGdiU8oEGqxM6Pd618yI9cJWNHF3g==
+"@mantine/form@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.npmjs.org/@mantine/form/-/form-8.0.1.tgz"
+  integrity sha512-lQ94gn/9p60C+tKEW7psQ1tZHod58Q0bXLbRDadRKMwnqBb2WFoIuaQWPDo7ox+PqyOv28dtflgS+Lm95EbBhg==
   dependencies:
     fast-deep-equal "^3.1.3"
     klona "^2.0.6"
 
-"@mantine/hooks@^7.17.7", "@mantine/hooks@7.17.7":
-  version "7.17.7"
-  resolved "https://registry.npmjs.org/@mantine/hooks/-/hooks-7.17.7.tgz"
-  integrity sha512-5MIvN/YAcewc97nG3jVrlnFqAExnJRBNWmV6UgGHWbiZiPSCh5o2RJE/5ZVGSfkexDpav9gkm2jkWkIbemVqVA==
+"@mantine/hooks@^8.0.1", "@mantine/hooks@8.0.1":
+  version "8.0.1"
+  resolved "https://registry.npmjs.org/@mantine/hooks/-/hooks-8.0.1.tgz"
+  integrity sha512-GvLdM4Ro3QcDyIgqrdXsUZmeeKye2TNL/k3mEr9JhM5KacHQjr83JPp0u9eLobn7kiyBqpLTYmVYAbmjJdCxHw==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"

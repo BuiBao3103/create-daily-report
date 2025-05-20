@@ -1,44 +1,16 @@
-import { useState } from 'react';
 import { keyframes } from '@emotion/react';
 import { Box, Container, Grid, Paper, Title } from '@mantine/core';
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
+import { DailyReportProvider } from '../context/DailyReportContext';
 import { DailyReportForm } from '../modules-features/DailyReport/DailyReportForm';
 import { DailyReportOutput } from '../modules-features/DailyReport/DailyReportOutput';
-import { DailyReportData } from '@/types/DailyReportForm.types';
-import { DailyReportProvider } from '../context/DailyReportContext';
 
 const fadeIn = keyframes({
   from: { opacity: 0, transform: 'translateY(20px)' },
   to: { opacity: 1, transform: 'translateY(0)' },
 });
 
-const getDefaultReportData = (): DailyReportData => {
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  if (today.getDay() === 1) {
-    yesterday.setDate(today.getDate() - 3);
-  }
-
-  return {
-    date: today,
-    intern_name: '',
-    is_intern: false,
-    yesterdayDate: yesterday,
-    todayDate: today,
-    yesterdayTasks: [],
-    todayTasks: [],
-    waitingForTask: false,
-  };
-};
-
 export function HomePage() {
-  const [reportData, setReportData] = useState<DailyReportData>(getDefaultReportData());
-
-  const handleSubmit = (data: DailyReportData) => {
-    setReportData(data);
-  };
-
   return (
     <Box
       style={{
@@ -72,7 +44,7 @@ export function HomePage() {
         >
           Báo cáo hàng ngày
         </Title>
-        <DailyReportProvider onSubmit={handleSubmit}>
+        <DailyReportProvider>
           <Grid gutter={0} style={{ height: 'calc(100vh - 30px)', maxHeight: '800px' }}>
             <Grid.Col span={{ base: 12, md: 6 }}>
               <Paper
@@ -113,7 +85,7 @@ export function HomePage() {
                   },
                 }}
               >
-                <DailyReportOutput data={reportData} />
+                <DailyReportOutput />
               </Paper>
             </Grid.Col>
           </Grid>

@@ -1,23 +1,25 @@
 import baseAxios from "@/api/baseAxios";
+import { TasksResponse } from "@/interfaces/task.types";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { InternsResponse } from "@/interfaces/intern.types";
 
-const ENDPOINT = "/api/interns/";
-export default function useInterns({
+
+
+const ENDPOINT = "/api/tasks/";
+
+export default function useTask({
     options,
     params
 }: {
-    options?: Partial<UseQueryOptions<InternsResponse, Error>>,
+    options?: Partial<UseQueryOptions<TasksResponse, Error>>,
     params?: string
 } = {}) {
-    const query = useQuery<InternsResponse>({
+    const query = useQuery<TasksResponse>({
         queryKey: [ENDPOINT + params],
         queryFn: async () => {
             const response = await baseAxios.get(ENDPOINT + params);
-            console.log(response.data);
             return response.data
         },
         ...options
-    })
+    });
     return query;
-}
+} 

@@ -1,134 +1,78 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo } from 'react';
-import { useForm } from '@mantine/form';
-import { Absence, DailyReportData } from '@/types/DailyReportForm.types';
-import { Task } from '@/types/TaskForm.types';
-
-interface FormValues {
-  internID?: number;
-  internName: string;
-  date: Date;
-  isIntern: boolean;
-  yesterdayTasks: Task[];
-  todayTasks: Task[];
-  waitingForTask: boolean;
-  yesterdayDate: Date;
-  todayDate: Date;
-  yesterdayAbsence?: Absence;
-  todayAbsence?: Absence;
-}
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 interface DailyReportContextType {
-  form: ReturnType<typeof useForm<FormValues>>;
-  updateOutput: () => void;
-  deleteTask: (taskIndex: number, isToday: boolean) => void;
-  editTask: (taskIndex: number, isToday: boolean, updatedTask: Task) => void;
-  deleteAbsence: (isToday: boolean) => void;
+  intern: number | null;
+  isIntern: boolean;
+  name: string;
+  waitingForTask: boolean;
+  yesterdayDate: string;
+  todayDate: string;
+  setIntern: (intern: number | null) => void;
+  setIsIntern: (isIntern: boolean) => void;
+  setName: (name: string) => void;
+  setWaitingForTask: (waiting: boolean) => void;
+  setYesterdayDate: (date: string) => void;
+  setTodayDate: (date: string) => void;
 }
 
-const DailyReportContext = createContext<DailyReportContextType | null>(null);
+const DailyReportContext = createContext<DailyReportContextType | undefined>(undefined);
 
-interface DailyReportProviderProps {
-  readonly children: ReactNode;
-  readonly onSubmit: (data: DailyReportData) => void;
-}
+const formatDate = (date: Date): string => {
+  return date.toISOString().split('T')[0];
+};
 
-export function DailyReportProvider({ children, onSubmit }: DailyReportProviderProps) {
-  const form = useForm<FormValues>({
-    initialValues: {
-      internID: undefined,
-      internName: '',
-      date: new Date(),
-      isIntern: false,
-      yesterdayTasks: [],
-      todayTasks: [],
-      waitingForTask: false,
-      yesterdayDate: (() => {
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1);
-        if (today.getDay() === 1) {
-          yesterday.setDate(today.getDate() - 3);
-        }
-        return yesterday;
-      })(),
-      todayDate: new Date(),
-    },
-    validate: {
-      internName: (value) => (value.trim().length > 0 ? null : 'Vui lòng nhập họ và tên'),
-      date: (value) => (value ? null : 'Vui lòng chọn ngày báo cáo'),
-    },
-  });
+const getYesterdayDate = (today: Date): Date => {
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
 
-  const updateOutput = () => {
-    const data: DailyReportData = {
-      date: form.values.date,
-      intern_id: form.values.internID,
-      intern_name: form.values.internName,
-      is_intern: form.values.isIntern,
-      yesterdayDate: form.values.yesterdayDate,
-      todayDate: form.values.todayDate,
-      yesterdayTasks: form.values.yesterdayTasks,
-      todayTasks: form.values.todayTasks,
-      waitingForTask: form.values.waitingForTask,
-      yesterdayAbsence: form.values.yesterdayAbsence,
-      todayAbsence: form.values.todayAbsence,
-    };
-    onSubmit(data);
-  };
+  // If today is Monday (1), set yesterday to last Friday (5)
+  if (today.getDay() === 1) {
+    yesterday.setDate(today.getDate() - 3);
+  }
 
-  const deleteTask = (taskIndex: number, isToday: boolean) => {
-    if (isToday) {
-      const newTasks = form.values.todayTasks.filter((_, index) => index !== taskIndex);
-      form.setFieldValue('todayTasks', newTasks);
-    } else {
-      const newTasks = form.values.yesterdayTasks.filter((_, index) => index !== taskIndex);
-      form.setFieldValue('yesterdayTasks', newTasks);
-    }
-    updateOutput();
-  };
+  return yesterday;
+};
 
-  const editTask = (taskIndex: number, isToday: boolean, updatedTask: Task) => {
-    if (isToday) {
-      const newTasks = [...form.values.todayTasks];
-      newTasks[taskIndex] = updatedTask;
-      form.setFieldValue('todayTasks', newTasks);
-    } else {
-      const newTasks = [...form.values.yesterdayTasks];
-      newTasks[taskIndex] = updatedTask;
-      form.setFieldValue('yesterdayTasks', newTasks);
-    }
-    updateOutput();
-  };
+export function DailyReportProvider({ children }: { readonly children: React.ReactNode }) {
+  const [intern, setIntern] = useState<number | null>(null);
+  const [isIntern, setIsIntern] = useState(false);
+  const [name, setName] = useState('');
+  const [waitingForTask, setWaitingForTask] = useState(false);
+  const [yesterdayDate, setYesterdayDate] = useState<string>('');
+  const [todayDate, setTodayDate] = useState<string>('');
 
-  const deleteAbsence = (isToday: boolean) => {
-    if (isToday) {
-      form.setFieldValue('todayAbsence', undefined);
-    } else {
-      form.setFieldValue('yesterdayAbsence', undefined);
-    }
-    updateOutput();
-  };
-
-  // Update output when form values change
   useEffect(() => {
-    updateOutput();
-  }, [form.values]);
+    const today = new Date();
+    const yesterday = getYesterdayDate(today);
 
-  const contextValue = useMemo(
-    () => ({ form, updateOutput, deleteTask, editTask, deleteAbsence }),
-    [form, updateOutput, deleteTask, editTask, deleteAbsence]
+    setTodayDate(formatDate(today));
+    setYesterdayDate(formatDate(yesterday));
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      intern,
+      isIntern,
+      name,
+      waitingForTask,
+      yesterdayDate,
+      todayDate,
+      setIntern,
+      setIsIntern,
+      setName,
+      setWaitingForTask,
+      setYesterdayDate,
+      setTodayDate,
+    }),
+    [intern, isIntern, name, waitingForTask, yesterdayDate, todayDate]
   );
 
-  return (
-    <DailyReportContext.Provider value={contextValue}>
-      {children}
-    </DailyReportContext.Provider>
-  );
+  return <DailyReportContext.Provider value={value}>{children}</DailyReportContext.Provider>;
 }
 
 export function useDailyReport() {
   const context = useContext(DailyReportContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useDailyReport must be used within a DailyReportProvider');
   }
   return context;

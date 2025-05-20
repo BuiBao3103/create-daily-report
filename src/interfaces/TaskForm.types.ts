@@ -1,13 +1,4 @@
-export interface Task {
-  task_id?: string;
-  content: string;
-  project?: string;
-  est_time?: number;
-  act_time?: number;
-  status: string;
-  date?: Date;
-  intern?: number | null;
-}
+import { Task } from "./task.types";
 
 export interface TaskFormProps {
   task: Task;

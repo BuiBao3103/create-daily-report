@@ -23,14 +23,10 @@ import {
   ThemeIcon,
   Tooltip,
 } from '@mantine/core';
-import { AbsenceType, DailyReportData } from '@/types/DailyReportForm.types';
-import { Task } from '@/types/TaskForm.types';
-import { TaskModal } from './TaskModal';
+import { AbsenceType } from '@/interfaces/DailyReportForm.types';
+import { Task } from '@/interfaces/task.types';
 import { useDailyReport } from '../../context/DailyReportContext';
-
-interface DailyReportOutputProps {
-  readonly data?: DailyReportData;
-}
+import { TaskModal } from './TaskModal';
 
 const formatDate = (date: Date) => {
   return date.toLocaleDateString('vi-VN', {
@@ -40,15 +36,12 @@ const formatDate = (date: Date) => {
   });
 };
 
-const formatTextOutput = (data: DailyReportData) => {
-  let output = `${data.intern_name}${data.is_intern ? ' (Thực tập sinh)' : ''}\n`;
-  output += `Daily (${formatDate(data.date)})\n\n`;
+const formatTextOutput = (data: any) => {
+  let output = `${data.name}${data.isIntern ? ' (Thực tập sinh)' : ''}\n`;
+  output += `Daily (${formatDate(new Date(data.todayDate))})\n\n`;
 
-  output += `# ${formatDate(data.yesterdayDate)}:\n`;
-  if (data.yesterdayAbsence) {
-    output += `+ Nghỉ ${data.yesterdayAbsence.type === AbsenceType.SCHEDULED ? 'theo lịch' : data.yesterdayAbsence.type === AbsenceType.EXCUSED ? 'có phép' : 'không phép'}: ${data.yesterdayAbsence.reason}\n`;
-  }
-  data.yesterdayTasks.forEach((task) => {
+  output += `# ${formatDate(new Date(data.yesterdayDate))}:\n`;
+  data.yesterdayTasks?.forEach((task: Task) => {
     const taskId = task.task_id ? `[${task.task_id}]` : '';
     const project = task.project ? `(${task.project})` : '';
     const estTime = task.est_time ? `dự kiến: ${task.est_time}h` : '';
@@ -60,11 +53,8 @@ const formatTextOutput = (data: DailyReportData) => {
     output += `+ ${parts.join(' - ')}\n`;
   });
 
-  output += `\n# ${formatDate(data.todayDate)}:\n`;
-  if (data.todayAbsence) {
-    output += `+ Nghỉ ${data.todayAbsence.type === AbsenceType.SCHEDULED ? 'theo lịch' : data.todayAbsence.type === AbsenceType.EXCUSED ? 'có phép' : 'không phép'}: ${data.todayAbsence.reason}\n`;
-  }
-  data.todayTasks.forEach((task) => {
+  output += `\n# ${formatDate(new Date(data.todayDate))}:\n`;
+  data.todayTasks?.forEach((task: Task) => {
     const taskId = task.task_id ? `[${task.task_id}]` : '';
     const project = task.project ? `(${task.project})` : '';
     const estTime = task.est_time ? `dự kiến: ${task.est_time}h` : '';
@@ -83,17 +73,25 @@ const formatTextOutput = (data: DailyReportData) => {
   return output;
 };
 
-export function DailyReportOutput({ data }: DailyReportOutputProps) {
+export function DailyReportOutput() {
   const [isTableView, setIsTableView] = useState(true);
   const [copied, setCopied] = useState(false);
-  const { deleteTask, editTask, deleteAbsence } = useDailyReport();
   const [editModalOpened, setEditModalOpened] = useState(false);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [isTodayTask, setIsTodayTask] = useState(true);
+  const { name, isIntern, waitingForTask, yesterdayDate, todayDate } = useDailyReport();
 
   const handleCopy = async () => {
-    if (!data) return;
     try {
+      const data = {
+        name,
+        isIntern,
+        waitingForTask,
+        yesterdayDate,
+        todayDate,
+        yesterdayTasks: [],
+        todayTasks: [],
+      };
       await navigator.clipboard.writeText(formatTextOutput(data));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -108,18 +106,20 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
     setEditModalOpened(true);
   };
 
-  const handleEditSubmit = (updatedTask: Task) => {
-    if (currentTask) {
-      const index = isTodayTask
-        ? (data?.todayTasks.findIndex((t) => t === currentTask) ?? -1)
-        : (data?.yesterdayTasks.findIndex((t) => t === currentTask) ?? -1);
-
-      if (index !== -1) {
-        editTask(index, isTodayTask, updatedTask);
-      }
-    }
+  const handleEditSubmit = () => {
+    // TODO: Implement edit task functionality
     setEditModalOpened(false);
     setCurrentTask(null);
+  };
+
+  const data = {
+    name,
+    isIntern,
+    waitingForTask,
+    yesterdayDate,
+    todayDate,
+    yesterdayTasks: [],
+    todayTasks: [],
   };
 
   return (
@@ -131,7 +131,7 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
               Báo cáo công việc
             </Text>
             <Text size="sm" c="dimmed">
-              {data?.date ? formatDate(data.date) : 'Chưa có dữ liệu'}
+              {data.todayDate ? formatDate(new Date(data.todayDate)) : 'Chưa có dữ liệu'}
             </Text>
           </Stack>
           <Group gap="xs" align="center">
@@ -195,8 +195,8 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                 <Stack gap="md">
                   <Group>
                     <Badge size="lg" variant="light" color="blue" radius="md">
-                      {data.intern_name}
-                      {data.is_intern ? ' (Thực tập sinh)' : ''}
+                      {data.name}
+                      {data.isIntern ? ' (Thực tập sinh)' : ''}
                     </Badge>
                   </Group>
                   <Group justify="space-between" align="center">
@@ -205,7 +205,7 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                         CÔNG VIỆC HÔM QUA
                       </Text>
                       <Text size="sm" c="blue.7">
-                        {formatDate(data.yesterdayDate)}
+                        {formatDate(new Date(data.yesterdayDate))}
                       </Text>
                     </Stack>
                     <Badge variant="light" color="blue" radius="md">
@@ -247,7 +247,7 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                         </Table.Tr>
                       </Table.Thead>
                       <Table.Tbody>
-                        {data.yesterdayTasks.map((task, index) => (
+                        {data.yesterdayTasks.map((task: Task, index: number) => (
                           <Table.Tr key={index}>
                             <Table.Td>{task.task_id || '-'}</Table.Td>
                             <Table.Td>{task.project || '-'}</Table.Td>
@@ -274,7 +274,7 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                                     color="red"
                                     size="sm"
                                     radius="xl"
-                                    onClick={() => deleteTask(index, false)}
+                                    onClick={() => {}}
                                   >
                                     <IconTrash size={14} />
                                   </ActionIcon>
@@ -283,51 +283,6 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                             </Table.Td>
                           </Table.Tr>
                         ))}
-                        {data.yesterdayAbsence && (
-                          <Table.Tr>
-                            <Table.Td colSpan={7} ta="center" py="md">
-                              <Group justify="center" gap="xs">
-                                <Badge
-                                  variant="light"
-                                  color={
-                                    data.yesterdayAbsence.type === AbsenceType.SCHEDULED
-                                      ? 'blue'
-                                      : data.yesterdayAbsence.type === AbsenceType.EXCUSED
-                                        ? 'green'
-                                        : 'red'
-                                  }
-                                  size="lg"
-                                  radius="md"
-                                >
-                                  Nghỉ{' '}
-                                  {data.yesterdayAbsence.type === AbsenceType.SCHEDULED
-                                    ? 'theo lịch'
-                                    : data.yesterdayAbsence.type === AbsenceType.EXCUSED
-                                      ? 'có phép'
-                                      : 'không phép'}
-                                  : {data.yesterdayAbsence.reason}
-                                </Badge>
-                                <Tooltip label="Xóa">
-                                  <ActionIcon
-                                    variant="light"
-                                    color={
-                                      data.yesterdayAbsence.type === AbsenceType.SCHEDULED
-                                        ? 'blue'
-                                        : data.yesterdayAbsence.type === AbsenceType.EXCUSED
-                                          ? 'green'
-                                          : 'red'
-                                    }
-                                    size="sm"
-                                    radius="xl"
-                                    onClick={() => deleteAbsence(false)}
-                                  >
-                                    <IconX size={14} />
-                                  </ActionIcon>
-                                </Tooltip>
-                              </Group>
-                            </Table.Td>
-                          </Table.Tr>
-                        )}
                       </Table.Tbody>
                     </Table>
                   </Paper>
@@ -340,7 +295,7 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                         CÔNG VIỆC HÔM NAY
                       </Text>
                       <Text size="sm" c="blue.7">
-                        {formatDate(data.todayDate)}
+                        {formatDate(new Date(data.todayDate))}
                       </Text>
                     </Stack>
                     <Badge variant="light" color="blue" radius="md">
@@ -382,7 +337,7 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                         </Table.Tr>
                       </Table.Thead>
                       <Table.Tbody>
-                        {data.todayTasks.map((task, index) => (
+                        {data.todayTasks.map((task: Task, index: number) => (
                           <Table.Tr key={index}>
                             <Table.Td>{task.task_id || '-'}</Table.Td>
                             <Table.Td>{task.project || '-'}</Table.Td>
@@ -409,7 +364,7 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                                     color="red"
                                     size="sm"
                                     radius="xl"
-                                    onClick={() => deleteTask(index, true)}
+                                    onClick={() => {}}
                                   >
                                     <IconTrash size={14} />
                                   </ActionIcon>
@@ -418,51 +373,6 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                             </Table.Td>
                           </Table.Tr>
                         ))}
-                        {data.todayAbsence && (
-                          <Table.Tr>
-                            <Table.Td colSpan={7} ta="center" py="md">
-                              <Group justify="center" gap="xs">
-                                <Badge
-                                  variant="light"
-                                  color={
-                                    data.todayAbsence.type === AbsenceType.SCHEDULED
-                                      ? 'blue'
-                                      : data.todayAbsence.type === AbsenceType.EXCUSED
-                                        ? 'green'
-                                        : 'red'
-                                  }
-                                  size="lg"
-                                  radius="md"
-                                >
-                                  Nghỉ{' '}
-                                  {data.todayAbsence.type === AbsenceType.SCHEDULED
-                                    ? 'theo lịch'
-                                    : data.todayAbsence.type === AbsenceType.EXCUSED
-                                      ? 'có phép'
-                                      : 'không phép'}
-                                  : {data.todayAbsence.reason}
-                                </Badge>
-                                <Tooltip label="Xóa">
-                                  <ActionIcon
-                                    variant="light"
-                                    color={
-                                      data.todayAbsence.type === AbsenceType.SCHEDULED
-                                        ? 'blue'
-                                        : data.todayAbsence.type === AbsenceType.EXCUSED
-                                          ? 'green'
-                                          : 'red'
-                                    }
-                                    size="sm"
-                                    radius="xl"
-                                    onClick={() => deleteAbsence(true)}
-                                  >
-                                    <IconX size={14} />
-                                  </ActionIcon>
-                                </Tooltip>
-                              </Group>
-                            </Table.Td>
-                          </Table.Tr>
-                        )}
                       </Table.Tbody>
                     </Table>
                   </Paper>
@@ -489,7 +399,7 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
 
       {data && (
         <TaskModal
-          workDate={data.date}
+          workDate={data.todayDate}
           opened={editModalOpened}
           onClose={() => {
             setEditModalOpened(false);

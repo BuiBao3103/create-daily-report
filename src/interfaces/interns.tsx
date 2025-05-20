@@ -3,3 +3,4 @@ interface InternsResponse {
     full_name?: string;
     uni_code?: string;
 }
+

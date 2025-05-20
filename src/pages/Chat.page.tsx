@@ -1,29 +1,29 @@
-import React, { useEffect, useState, FormEvent } from 'react';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import React, { FormEvent, useEffect, useState } from 'react';
 import {
-  Chart as ChartJS,
-  LineElement,
-  BarElement,
   ArcElement,
-  PointElement,
-  LinearScale,
+  BarElement,
   CategoryScale,
-  Tooltip,
-  Legend,
   ChartData,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Tooltip,
 } from 'chart.js';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import {
   Box,
   Button,
+  Container,
   Group,
+  Paper,
   ScrollArea,
+  SegmentedControl,
   TextInput,
   Title,
-  Container,
-  Paper,
 } from '@mantine/core';
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
-import { SegmentedControl } from '@mantine/core';
 
 ChartJS.register(
   LineElement,

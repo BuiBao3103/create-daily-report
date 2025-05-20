@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   Autocomplete,
   Button,
@@ -9,33 +10,38 @@ import {
   TextInput,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { projects, statuses } from '@/constants/TaskForm.constants';
-import { Task } from '@/types/TaskForm.types';
-import { useEffect } from 'react';
-import { useDailyReport } from '@/context/DailyReportContext';
 import baseAxios from '@/api/baseAxios';
+import { projects, statuses } from '@/constants/TaskForm.constants';
+import { useDailyReport } from '@/context/DailyReportContext';
+import { Task } from '@/interfaces/task.types';
 
 interface TaskModalProps {
-  readonly workDate: Date;
+  readonly workDate: string;
   readonly opened: boolean;
   readonly onClose: () => void;
-  readonly onSubmit: (task: Task) => void;
-  readonly initialValues?: Task;
+  readonly onSubmit: () => void;
+  readonly initialValues?: Omit<Task, 'date'>;
   readonly isEdit?: boolean;
 }
 
-export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, isEdit = false }: TaskModalProps) {
-  const { form, updateOutput } = useDailyReport();
-  const formTask = useForm<Task>({
+export function TaskModal({
+  workDate,
+  opened,
+  onClose,
+  onSubmit,
+  initialValues,
+  isEdit = false,
+}: TaskModalProps) {
+  const { intern } = useDailyReport();
+  const formTask = useForm<Omit<Task, 'date'>>({
     initialValues: initialValues || {
-      date: workDate,
       content: '',
       task_id: '',
       project: '',
       est_time: undefined,
       act_time: undefined,
       status: 'To Do',
-      intern: form.getValues().internID ?? null
+      intern: null,
     },
     validate: {
       content: (value) => (value.trim().length > 0 ? null : 'Vui lòng nhập nội dung công việc'),
@@ -44,39 +50,25 @@ export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, 
     },
   });
 
-  useEffect(() => {
-    formTask.setValues({ ...formTask.values, intern: form.getValues().internID ?? null });
-  }, [opened]);
-
   const handleSubmit = async () => {
-  const validationResult = formTask.validate();
-  if (validationResult.hasErrors) {
-    return;
-  }
+    const validationResult = formTask.validate();
+    if (validationResult.hasErrors) {
+      return;
+    }
 
-  // Chuyển ngày về định dạng chuỗi 'YYYY-MM-DD'
-  const formattedDate = workDate.toISOString().split('T')[0];
+    await baseAxios.post('/api/tasks/', { ...formTask.values, intern, date: workDate });
 
-  const valuesToSubmit = {
-    ...formTask.values,
-    date: formattedDate,
+    onSubmit();
+    formTask.reset();
+    onClose();
   };
-
-  console.log(valuesToSubmit);
-  await baseAxios.post('/api/tasks/', valuesToSubmit);
-
-  onSubmit(formTask.values);
-  formTask.reset();
-  onClose();
-};
-
 
   return (
     <Modal
       size={'lg'}
       opened={opened}
       onClose={onClose}
-      title={isEdit ? "Chỉnh sửa task" : "Thêm task mới"}
+      title={isEdit ? 'Chỉnh sửa task' : 'Thêm task mới'}
       centered
     >
       <Stack gap="xs">

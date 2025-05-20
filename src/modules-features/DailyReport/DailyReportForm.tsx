@@ -1,6 +1,5 @@
 'use-client';
 
-import { useEffect } from 'react';
 import { IconLock } from '@tabler/icons-react';
 import {
   Center,
@@ -17,19 +16,32 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
-// import { interns } from '@/constants/TaskForm.constants';
-import { AbsenceType } from '@/types/DailyReportForm.types';
+import useInterns from '@/hooks/use_interns';
+import { AbsenceType } from '@/interfaces/DailyReportForm.types';
+import { useDailyReport } from '../../context/DailyReportContext';
 import { AbsenceModal } from './AbsenceModal';
 import { DaySection } from './DaySection';
 import { TaskModal } from './TaskModal';
-import { useDailyReport } from '../../context/DailyReportContext';
-import useInterns from '@/hooks/use_interns';
 
 function DailyReportFormContent() {
   const query = useInterns({
-    params: ""
-  })
-  const { form, updateOutput } = useDailyReport();
+    params: '',
+  });
+  const {
+    intern,
+    isIntern,
+    name,
+    waitingForTask,
+    yesterdayDate,
+    todayDate,
+    setIntern,
+    setIsIntern,
+    setName,
+    setWaitingForTask,
+    setYesterdayDate,
+    setTodayDate,
+  } = useDailyReport();
+
   const [yesterdayTaskModal, { open: openYesterdayTaskModal, close: closeYesterdayTaskModal }] =
     useDisclosure(false);
   const [todayTaskModal, { open: openTodayTaskModal, close: closeTodayTaskModal }] =
@@ -41,15 +53,13 @@ function DailyReportFormContent() {
   const [todayAbsenceModal, { open: openTodayAbsenceModal, close: closeTodayAbsenceModal }] =
     useDisclosure(false);
 
-  // Update output when name or date changes
-  useEffect(() => {
-    updateOutput();
-  }, [form.values.internName, form.values.date]);
-
-  const handleDateChange = (date: Date | null, field: 'yesterdayDate' | 'todayDate') => {
+  const handleDateChange = (date: string | null, field: 'yesterdayDate' | 'todayDate') => {
     if (date) {
-      form.setFieldValue(field, date);
-      updateOutput();
+      if (field === 'yesterdayDate') {
+        setYesterdayDate(date);
+      } else {
+        setTodayDate(date);
+      }
     }
   };
 
@@ -62,9 +72,10 @@ function DailyReportFormContent() {
             <TextInput
               label="Họ và tên"
               placeholder="Nhập họ và tên"
-              disabled={form.values.isIntern}
+              disabled={isIntern}
               withAsterisk
-              {...form.getInputProps('internName')}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
             <DateInput
               label="Ngày báo cáo"
@@ -74,32 +85,31 @@ function DailyReportFormContent() {
               withAsterisk
               clearable={false}
               style={{ flex: 1 }}
-              {...form.getInputProps('date')}
+              value={todayDate}
+              onChange={(date) => date && setTodayDate(date)}
             />
             <Checkbox
               label="Là thực tập sinh"
               mt={25}
-              {...form.getInputProps('isIntern', { type: 'checkbox' })}
+              checked={isIntern}
+              onChange={(e) => setIsIntern(e.currentTarget.checked)}
             />
           </Group>
 
-          {form.values.isIntern && (
+          {isIntern && (
             <Select
               allowDeselect={false}
               label="Chọn thực tập sinh"
               placeholder="Chọn thực tập sinh"
               data={
-                // interns?.data?.results?.map((intern) => ({
-                //   value: intern.full_name,
-                //   label: `${intern.full_name} - ${intern.uni_code}`,
-                // })) || []
                 (query?.data?.results || []).map((intern) => ({
                   value: intern.id.toString(),
                   label: `${intern.full_name} - ${intern.uni_code}`,
                 })) || []
               }
               withAsterisk
-              {...form.getInputProps('internID')}
+              value={intern?.toString()}
+              onChange={(value) => setIntern(value ? parseInt(value) : null)}
             />
           )}
 
@@ -107,7 +117,7 @@ function DailyReportFormContent() {
             <Stack gap="xs" style={{ position: 'relative' }}>
               <DateInput
                 label="Ngày trước"
-                value={form.values.yesterdayDate}
+                value={yesterdayDate}
                 onChange={(date) => handleDateChange(date, 'yesterdayDate')}
                 valueFormat="DD/MM/YYYY"
                 maxDate={new Date()}
@@ -118,7 +128,7 @@ function DailyReportFormContent() {
                 onAddAbsence={() => openYesterdayAbsenceModal()}
                 label="Hôm qua"
               />
-              {!form.values.internID && (
+              {!intern && (
                 <MantinePaper
                   pos="absolute"
                   top={0}
@@ -149,22 +159,19 @@ function DailyReportFormContent() {
             <Stack gap="xs" style={{ position: 'relative' }}>
               <DateInput
                 label="Ngày hôm nay"
-                value={form.values.todayDate}
+                value={todayDate}
                 onChange={(date) => handleDateChange(date, 'todayDate')}
                 valueFormat="DD/MM/YYYY"
                 maxDate={new Date()}
               />
               <DaySection
-                waitingForTask={form.values.waitingForTask}
+                waitingForTask={waitingForTask}
                 onAddTask={() => openTodayTaskModal()}
                 onAddAbsence={() => openTodayAbsenceModal()}
-                onWaitingForTaskChange={(checked) => {
-                  form.setFieldValue('waitingForTask', checked);
-                  updateOutput();
-                }}
+                onWaitingForTaskChange={(checked) => setWaitingForTask(checked)}
                 label="Hôm nay"
               />
-              {!form.values.internID && (
+              {!intern && (
                 <MantinePaper
                   pos="absolute"
                   top={0}
@@ -196,23 +203,19 @@ function DailyReportFormContent() {
       </Paper>
 
       <TaskModal
-        workDate={form.values.yesterdayDate}
+        workDate={yesterdayDate}
         opened={yesterdayTaskModal}
         onClose={closeYesterdayTaskModal}
-        onSubmit={(task) => {
-          form.setFieldValue('yesterdayTasks', [...form.values.yesterdayTasks, task]);
-          updateOutput();
+        onSubmit={() => {
           closeYesterdayTaskModal();
         }}
       />
 
       <TaskModal
-        workDate={form.values.todayDate}
+        workDate={todayDate}
         opened={todayTaskModal}
         onClose={closeTodayTaskModal}
-        onSubmit={(task) => {
-          form.setFieldValue('todayTasks', [...form.values.todayTasks, task]);
-          updateOutput();
+        onSubmit={() => {
           closeTodayTaskModal();
         }}
       />
@@ -220,22 +223,11 @@ function DailyReportFormContent() {
       <AbsenceModal
         opened={yesterdayAbsenceModal}
         onClose={closeYesterdayAbsenceModal}
-        absenceType={form.values.yesterdayAbsence?.type ?? AbsenceType.SCHEDULED}
-        setAbsenceType={(type) => {
-          form.setFieldValue('yesterdayAbsence', {
-            type,
-            reason: form.values.yesterdayAbsence?.reason ?? '',
-          });
-        }}
-        absenceReason={form.values.yesterdayAbsence?.reason ?? ''}
-        setAbsenceReason={(reason) => {
-          form.setFieldValue('yesterdayAbsence', {
-            type: form.values.yesterdayAbsence?.type ?? AbsenceType.SCHEDULED,
-            reason,
-          });
-        }}
+        absenceType={AbsenceType.SCHEDULED}
+        setAbsenceType={() => {}}
+        absenceReason=""
+        setAbsenceReason={() => {}}
         onSubmit={() => {
-          updateOutput();
           closeYesterdayAbsenceModal();
         }}
       />
@@ -243,22 +235,11 @@ function DailyReportFormContent() {
       <AbsenceModal
         opened={todayAbsenceModal}
         onClose={closeTodayAbsenceModal}
-        absenceType={form.values.todayAbsence?.type ?? AbsenceType.SCHEDULED}
-        setAbsenceType={(type) => {
-          form.setFieldValue('todayAbsence', {
-            type,
-            reason: form.values.todayAbsence?.reason ?? '',
-          });
-        }}
-        absenceReason={form.values.todayAbsence?.reason ?? ''}
-        setAbsenceReason={(reason) => {
-          form.setFieldValue('todayAbsence', {
-            type: form.values.todayAbsence?.type ?? AbsenceType.SCHEDULED,
-            reason,
-          });
-        }}
+        absenceType={AbsenceType.SCHEDULED}
+        setAbsenceType={() => {}}
+        absenceReason=""
+        setAbsenceReason={() => {}}
         onSubmit={() => {
-          updateOutput();
           closeTodayAbsenceModal();
         }}
       />
