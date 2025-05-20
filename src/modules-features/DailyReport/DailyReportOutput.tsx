@@ -27,6 +27,7 @@ import { AbsenceType } from '@/interfaces/DailyReportForm.types';
 import { Task } from '@/interfaces/task.types';
 import { useDailyReport } from '../../context/DailyReportContext';
 import { TaskModal } from './TaskModal';
+import useTask from '@/hooks/use_tasks';
 
 const formatDate = (date: Date) => {
   return date.toLocaleDateString('vi-VN', {
@@ -74,12 +75,22 @@ const formatTextOutput = (data: any) => {
 };
 
 export function DailyReportOutput() {
+
   const [isTableView, setIsTableView] = useState(true);
   const [copied, setCopied] = useState(false);
   const [editModalOpened, setEditModalOpened] = useState(false);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [isTodayTask, setIsTodayTask] = useState(true);
-  const { name, isIntern, waitingForTask, yesterdayDate, todayDate } = useDailyReport();
+  const { name, intern, isIntern, waitingForTask, yesterdayDate, todayDate } = useDailyReport();
+  const queryYesterday = useTask({
+    params: `?intern=${intern}&date=${yesterdayDate}`,
+    options: { enabled: !!intern },
+  });
+  const queryToday = useTask({
+    params: `?intern=${intern}&date=${todayDate}`,
+    options: { enabled: !!intern },
+  });
+  console.log(queryToday, queryYesterday);
 
   const handleCopy = async () => {
     try {
@@ -274,7 +285,7 @@ export function DailyReportOutput() {
                                     color="red"
                                     size="sm"
                                     radius="xl"
-                                    onClick={() => {}}
+                                    onClick={() => { }}
                                   >
                                     <IconTrash size={14} />
                                   </ActionIcon>
@@ -364,7 +375,7 @@ export function DailyReportOutput() {
                                     color="red"
                                     size="sm"
                                     radius="xl"
-                                    onClick={() => {}}
+                                    onClick={() => { }}
                                   >
                                     <IconTrash size={14} />
                                   </ActionIcon>
