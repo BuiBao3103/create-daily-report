@@ -24,6 +24,7 @@ import {
   Tooltip,
   Modal,
   Button,
+  NumberInput,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { AbsenceType } from '@/interfaces/DailyReportForm.types';
@@ -32,6 +33,7 @@ import { useDailyReport } from '../../context/DailyReportContext';
 import { TaskModal } from './TaskModal';
 import { useTaskMutations } from '@/hooks/use_tasks';
 import { useQueryClient } from '@tanstack/react-query';
+import { useForm } from '@mantine/form';
 
 const formatDate = (date: Date) => {
   return date.toLocaleDateString('vi-VN', {
@@ -85,6 +87,10 @@ export function DailyReportOutput() {
   const [deleteModal, deleteModalHandlers] = useDisclosure(false);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [isTodayTask, setIsTodayTask] = useState(true);
+  const [continueModal, setContinueModal] = useState(false);
+  const [doneModal, setDoneModal] = useState(false);
+  const [continueHours, setContinueHours] = useState<number | undefined>(undefined);
+  const [doneHours, setDoneHours] = useState<number | undefined>(undefined);
   const {
     name,
     intern,
@@ -148,6 +154,74 @@ export function DailyReportOutput() {
     }
     deleteModalHandlers.close();
     setCurrentTask(null);
+  };
+
+  const handleDoneClick = () => {
+    setDoneModal(true);
+    setContinueModal(false);
+  };
+
+  const handleDoneSubmit = async () => {
+    if (currentTask && typeof doneHours === 'number') {
+      await updateTask({ ...currentTask, status: 'Done', act_time: doneHours }, false);
+      editModalHandlers.close();
+      setDoneModal(false);
+      setCurrentTask(null);
+      setDoneHours(undefined);
+    }
+  };
+
+  const handleContinueClick = () => {
+    setContinueModal(true);
+    setDoneModal(false);
+  };
+
+  const handleContinueSubmit = async () => {
+    if (currentTask && typeof continueHours === 'number') {
+      const newTask = {
+        ...currentTask,
+        id: undefined,
+        date: todayDate,
+        est_time: continueHours,
+        act_time: undefined,
+        status: 'To Do',
+        content: currentTask.content + ' (làm tiếp)',
+      };
+      await updateTask(newTask, true);
+      editModalHandlers.close();
+      setContinueModal(false);
+      setCurrentTask(null);
+      setContinueHours(undefined);
+    }
+  };
+
+  // Handler for special actions from TaskModal
+  const handleSpecialAction = async (
+    action: 'done' | 'continue',
+    value: number | { est_time: number; act_time: number }
+  ) => {
+    if (!currentTask) return;
+    if (action === 'done' && typeof value === 'number') {
+      await updateTask({ ...currentTask, status: 'Done', act_time: value }, false);
+      editModalHandlers.close();
+      setCurrentTask(null);
+    } else if (action === 'continue' && typeof value === 'object' && value) {
+      // Cập nhật act_time hôm qua trước
+      await updateTask({ ...currentTask, act_time: value.act_time }, false);
+      // Tạo task mới cho hôm nay
+      const newTask = {
+        ...currentTask,
+        id: undefined,
+        date: todayDate,
+        est_time: value.est_time,
+        act_time: undefined,
+        status: 'To Do',
+        content: currentTask.content + ' (làm tiếp)',
+      };
+      await updateTask(newTask, true);
+      editModalHandlers.close();
+      setCurrentTask(null);
+    }
   };
 
   const data = {
@@ -443,6 +517,8 @@ export function DailyReportOutput() {
           onSubmit={handleEditSubmit}
           initialValues={currentTask || undefined}
           isEdit={true}
+          isToday={isTodayTask}
+          onSpecialAction={handleSpecialAction}
         />
       )}
 
@@ -461,6 +537,40 @@ export function DailyReportOutput() {
             <Button color="red" onClick={handleDeleteConfirm}>
               Xóa
             </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal opened={doneModal} onClose={() => setDoneModal(false)} title="Nhập thời gian thực tế" centered>
+        <Stack>
+          <Text>Nhập số giờ thực tế đã làm để hoàn thành task:</Text>
+          <NumberInput
+            label="Thời gian thực tế (giờ)"
+            min={0}
+            value={doneHours}
+            onChange={(val) => setDoneHours(typeof val === 'number' ? val : undefined)}
+            withAsterisk
+          />
+          <Group justify="flex-end">
+            <Button variant="light" onClick={() => setDoneModal(false)}>Hủy</Button>
+            <Button color="green" onClick={handleDoneSubmit} disabled={typeof doneHours !== 'number' || doneHours <= 0}>Cập nhật</Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Modal opened={continueModal} onClose={() => setContinueModal(false)} title="Làm tiếp task cho hôm nay" centered>
+        <Stack>
+          <Text>Nhập số giờ bạn sẽ tiếp tục làm task này hôm nay:</Text>
+          <NumberInput
+            label="Thời gian dự kiến (giờ)"
+            min={0}
+            value={continueHours}
+            onChange={(val) => setContinueHours(typeof val === 'number' ? val : undefined)}
+            withAsterisk
+          />
+          <Group justify="flex-end">
+            <Button variant="light" onClick={() => setContinueModal(false)}>Hủy</Button>
+            <Button color="blue" onClick={handleContinueSubmit} disabled={typeof continueHours !== 'number' || continueHours <= 0}>Tạo task mới</Button>
           </Group>
         </Stack>
       </Modal>
