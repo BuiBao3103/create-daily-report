@@ -1,4 +1,5 @@
 export interface Task {
+  id?: number;
   task_id?: string;
   content: string;
   project?: string;

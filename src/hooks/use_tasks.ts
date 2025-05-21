@@ -1,18 +1,8 @@
 import baseAxios from "@/api/baseAxios";
-import { TasksResponse } from "@/interfaces/task.types";
+import { Task, TasksResponse } from "@/interfaces/task.types";
 import { useMutation, UseMutationOptions, useQuery, UseQueryOptions } from "@tanstack/react-query";
 
 const ENDPOINT = "/api/tasks/";
-export interface Taskdaily {
-    task_id?: string
-    content: string
-    project?: string
-    est_time?: number
-    act_time?: number
-    status: string
-    date?: string
-    intern?: number | null
-}
 
 export default function useTask({
     options,
@@ -22,7 +12,7 @@ export default function useTask({
     params?: string
 } = {}) {
     const query = useQuery<TasksResponse>({
-        queryKey: [ENDPOINT + params],
+        queryKey: [ENDPOINT, params],
         queryFn: async () => {
             const response = await baseAxios.get(ENDPOINT + params);
             return response.data
@@ -30,16 +20,33 @@ export default function useTask({
         ...options
     });
     return query;
-} 
+}
 
-export function addOrCreateTask({options}: { options?: UseMutationOptions<any, Error, Taskdaily[], unknown> } = {}) {
-    const mutation = useMutation({
-        mutationFn: async (body: Taskdaily[]) => 
-        {
-            const res = await baseAxios.post(ENDPOINT, body);
-            return res
-        },
-        ...options
-    })
-    return mutation
+export function useTaskMutations() {
+    const addTask = useMutation({
+        mutationFn: async (task: Task) => {
+            const res = await baseAxios.post(ENDPOINT, task);
+            return res.data;
+        }
+    });
+
+    const updateTask = useMutation({
+        mutationFn: async (task: Task) => {
+            const res = await baseAxios.put(`${ENDPOINT}${task.id}/`, task);
+            return res.data;
+        }
+    });
+
+    const deleteTask = useMutation({
+        mutationFn: async (id: number) => {
+            const res = await baseAxios.delete(`${ENDPOINT}${id}/`);
+            return res.data;
+        }
+    });
+
+    return {
+        addTask,
+        updateTask,
+        deleteTask
+    };
 }

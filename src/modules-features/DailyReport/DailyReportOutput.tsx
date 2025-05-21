@@ -22,12 +22,16 @@ import {
   Text,
   ThemeIcon,
   Tooltip,
+  Modal,
+  Button,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { AbsenceType } from '@/interfaces/DailyReportForm.types';
 import { Task } from '@/interfaces/task.types';
 import { useDailyReport } from '../../context/DailyReportContext';
 import { TaskModal } from './TaskModal';
-import useTask from '@/hooks/use_tasks';
+import { useTaskMutations } from '@/hooks/use_tasks';
+import { useQueryClient } from '@tanstack/react-query';
 
 const formatDate = (date: Date) => {
   return date.toLocaleDateString('vi-VN', {
@@ -75,22 +79,26 @@ const formatTextOutput = (data: any) => {
 };
 
 export function DailyReportOutput() {
-
   const [isTableView, setIsTableView] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [editModalOpened, setEditModalOpened] = useState(false);
+  const [editModal, editModalHandlers] = useDisclosure(false);
+  const [deleteModal, deleteModalHandlers] = useDisclosure(false);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [isTodayTask, setIsTodayTask] = useState(true);
-  const { name, intern, isIntern, waitingForTask, yesterdayDate, todayDate } = useDailyReport();
-  const queryYesterday = useTask({
-    params: `?intern=${intern}&date=${yesterdayDate}`,
-    options: { enabled: !!intern },
-  });
-  const queryToday = useTask({
-    params: `?intern=${intern}&date=${todayDate}`,
-    options: { enabled: !!intern },
-  });
-  console.log(queryToday, queryYesterday);
+  const {
+    name,
+    intern,
+    isIntern,
+    waitingForTask,
+    yesterdayDate,
+    todayDate,
+    yesterdayTasks,
+    todayTasks,
+    updateTask,
+    deleteTask,
+  } = useDailyReport();
+  const { deleteTask: deleteTaskMutation } = useTaskMutations();
+  const queryClient = useQueryClient();
 
   const handleCopy = async () => {
     try {
@@ -100,8 +108,8 @@ export function DailyReportOutput() {
         waitingForTask,
         yesterdayDate,
         todayDate,
-        yesterdayTasks: [],
-        todayTasks: [],
+        yesterdayTasks,
+        todayTasks,
       };
       await navigator.clipboard.writeText(formatTextOutput(data));
       setCopied(true);
@@ -114,12 +122,31 @@ export function DailyReportOutput() {
   const handleEditClick = (task: Task, index: number, isToday: boolean) => {
     setCurrentTask(task);
     setIsTodayTask(isToday);
-    setEditModalOpened(true);
+    editModalHandlers.open();
   };
 
   const handleEditSubmit = () => {
-    // TODO: Implement edit task functionality
-    setEditModalOpened(false);
+    if (currentTask) {
+      updateTask(currentTask, isTodayTask);
+    }
+    editModalHandlers.close();
+    setCurrentTask(null);
+  };
+
+  const handleDeleteClick = (task: Task, isToday: boolean) => {
+    setCurrentTask(task);
+    setIsTodayTask(isToday);
+    deleteModalHandlers.open();
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (currentTask?.id) {
+      await deleteTaskMutation.mutateAsync(currentTask.id);
+      await queryClient.refetchQueries({
+        queryKey: ['/api/tasks/', `?intern=${intern}&date=${isTodayTask ? todayDate : yesterdayDate}`]
+      });
+    }
+    deleteModalHandlers.close();
     setCurrentTask(null);
   };
 
@@ -129,8 +156,8 @@ export function DailyReportOutput() {
     waitingForTask,
     yesterdayDate,
     todayDate,
-    yesterdayTasks: [],
-    todayTasks: [],
+    yesterdayTasks,
+    todayTasks,
   };
 
   return (
@@ -258,7 +285,7 @@ export function DailyReportOutput() {
                         </Table.Tr>
                       </Table.Thead>
                       <Table.Tbody>
-                        {data.yesterdayTasks.map((task: Task, index: number) => (
+                        {yesterdayTasks.map((task: Task, index: number) => (
                           <Table.Tr key={index}>
                             <Table.Td>{task.task_id || '-'}</Table.Td>
                             <Table.Td>{task.project || '-'}</Table.Td>
@@ -285,7 +312,7 @@ export function DailyReportOutput() {
                                     color="red"
                                     size="sm"
                                     radius="xl"
-                                    onClick={() => { }}
+                                    onClick={() => handleDeleteClick(task, false)}
                                   >
                                     <IconTrash size={14} />
                                   </ActionIcon>
@@ -348,7 +375,7 @@ export function DailyReportOutput() {
                         </Table.Tr>
                       </Table.Thead>
                       <Table.Tbody>
-                        {data.todayTasks.map((task: Task, index: number) => (
+                        {todayTasks.map((task: Task, index: number) => (
                           <Table.Tr key={index}>
                             <Table.Td>{task.task_id || '-'}</Table.Td>
                             <Table.Td>{task.project || '-'}</Table.Td>
@@ -375,7 +402,7 @@ export function DailyReportOutput() {
                                     color="red"
                                     size="sm"
                                     radius="xl"
-                                    onClick={() => { }}
+                                    onClick={() => handleDeleteClick(task, true)}
                                   >
                                     <IconTrash size={14} />
                                   </ActionIcon>
@@ -410,17 +437,33 @@ export function DailyReportOutput() {
 
       {data && (
         <TaskModal
-          workDate={data.todayDate}
-          opened={editModalOpened}
-          onClose={() => {
-            setEditModalOpened(false);
-            setCurrentTask(null);
-          }}
+          workDate={currentTask?.date ?? ''}
+          opened={editModal}
+          onClose={editModalHandlers.close}
           onSubmit={handleEditSubmit}
           initialValues={currentTask || undefined}
           isEdit={true}
         />
       )}
+
+      <Modal
+        opened={deleteModal}
+        onClose={deleteModalHandlers.close}
+        title="Xác nhận xóa"
+        centered
+      >
+        <Stack>
+          <Text>Bạn có chắc chắn muốn xóa task này?</Text>
+          <Group justify="flex-end">
+            <Button variant="light" onClick={deleteModalHandlers.close}>
+              Hủy
+            </Button>
+            <Button color="red" onClick={handleDeleteConfirm}>
+              Xóa
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Paper>
   );
 }

@@ -22,11 +22,13 @@ import { useDailyReport } from '../../context/DailyReportContext';
 import { AbsenceModal } from './AbsenceModal';
 import { DaySection } from './DaySection';
 import { TaskModal } from './TaskModal';
+import { useEffect } from 'react';
 
 function DailyReportFormContent() {
   const query = useInterns({
     params: '',
   });
+
   const {
     intern,
     isIntern,
@@ -40,7 +42,17 @@ function DailyReportFormContent() {
     setWaitingForTask,
     setYesterdayDate,
     setTodayDate,
+    addTask,
   } = useDailyReport();
+
+  useEffect(() => {
+    if (intern && query.data?.results) {
+      const selectedIntern = query.data.results.find((i) => i.id === intern);
+      if (selectedIntern) {
+        setName(selectedIntern.full_name);
+      }
+    }
+  }, [intern, query.data, setName]);
 
   const [yesterdayTaskModal, { open: openYesterdayTaskModal, close: closeYesterdayTaskModal }] =
     useDisclosure(false);
@@ -209,6 +221,7 @@ function DailyReportFormContent() {
         onSubmit={() => {
           closeYesterdayTaskModal();
         }}
+        isToday={false}
       />
 
       <TaskModal
@@ -218,6 +231,7 @@ function DailyReportFormContent() {
         onSubmit={() => {
           closeTodayTaskModal();
         }}
+        isToday={true}
       />
 
       <AbsenceModal
