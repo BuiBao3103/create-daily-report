@@ -103,7 +103,7 @@ export function DailyReportOutput() {
     updateTask,
     deleteTask,
   } = useDailyReport();
-  const { deleteTask: deleteTaskMutation } = useTaskMutations();
+  const { deleteTask: deleteTaskMutation, addTask, updateTask: taskMutationsUpdateTask } = useTaskMutations();
   const queryClient = useQueryClient();
 
   const handleCopy = async () => {
@@ -131,9 +131,9 @@ export function DailyReportOutput() {
     editModalHandlers.open();
   };
 
-  const handleEditSubmit = () => {
+  const handleEditSubmit = async () => {
     if (currentTask) {
-      updateTask(currentTask, isTodayTask);
+      await taskMutationsUpdateTask.mutateAsync(currentTask);
     }
     editModalHandlers.close();
     setCurrentTask(null);
@@ -163,7 +163,7 @@ export function DailyReportOutput() {
 
   const handleDoneSubmit = async () => {
     if (currentTask && typeof doneHours === 'number') {
-      await updateTask({ ...currentTask, status: 'Done', act_time: doneHours }, false);
+      await taskMutationsUpdateTask.mutateAsync({ ...currentTask, status: 'Done', act_time: doneHours });
       editModalHandlers.close();
       setDoneModal(false);
       setCurrentTask(null);
@@ -187,7 +187,7 @@ export function DailyReportOutput() {
         status: 'To Do',
         content: currentTask.content + ' (làm tiếp)',
       };
-      await updateTask(newTask, true);
+      await taskMutationsUpdateTask.mutateAsync(newTask);
       editModalHandlers.close();
       setContinueModal(false);
       setCurrentTask(null);
@@ -202,13 +202,20 @@ export function DailyReportOutput() {
   ) => {
     if (!currentTask) return;
     if (action === 'done' && typeof value === 'number') {
-      await updateTask({ ...currentTask, status: 'Done', act_time: value }, false);
+      // Cập nhật task hôm qua thành Done
+      await taskMutationsUpdateTask.mutateAsync({ ...currentTask, status: 'Done', act_time: value });
+      await queryClient.refetchQueries({
+        queryKey: ['/api/tasks/', `?intern=${intern}&date=${yesterdayDate}`]
+      });
       editModalHandlers.close();
       setCurrentTask(null);
     } else if (action === 'continue' && typeof value === 'object' && value) {
-      // Cập nhật act_time hôm qua trước
-      await updateTask({ ...currentTask, act_time: value.act_time }, false);
-      // Tạo task mới cho hôm nay
+      // 1. Cập nhật act_time hôm qua
+      await taskMutationsUpdateTask.mutateAsync({ ...currentTask, act_time: value.act_time });
+      await queryClient.refetchQueries({
+        queryKey: ['/api/tasks/', `?intern=${intern}&date=${yesterdayDate}`]
+      });
+      // 2. Tạo task mới cho hôm nay
       const newTask = {
         ...currentTask,
         id: undefined,
@@ -218,7 +225,10 @@ export function DailyReportOutput() {
         status: 'To Do',
         content: currentTask.content + ' (làm tiếp)',
       };
-      await updateTask(newTask, true);
+      await addTask.mutateAsync(newTask);
+      await queryClient.refetchQueries({
+        queryKey: ['/api/tasks/', `?intern=${intern}&date=${todayDate}`]
+      });
       editModalHandlers.close();
       setCurrentTask(null);
     }
