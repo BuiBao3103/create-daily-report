@@ -53,6 +53,12 @@ export function TaskModal({
       content: (value) => (value.trim().length > 0 ? null : 'Vui lòng nhập nội dung công việc'),
       est_time: (value) => (value && value > 0 ? null : 'Vui lòng nhập thời gian dự kiến'),
       status: (value) => (value ? null : 'Vui lòng chọn trạng thái'),
+      act_time: (value, values) => {
+        if (values.status === 'Done') {
+          return value && value > 0 ? null : 'Vui lòng nhập thời gian thực tế khi trạng thái là Done';
+        }
+        return null;
+      },
     },
   });
 
@@ -71,14 +77,24 @@ export function TaskModal({
   }, [opened, initialValues]);
 
   const handleSubmit = async (values: Omit<Task, 'date'>) => {
-    const taskData = { ...values, date: workDate, intern };
+    // Chuẩn bị payload gửi lên API
+    const apiPayload: any = { 
+      ...values, 
+      date: workDate, 
+      intern,
+    };
+    if (typeof values.act_time === 'number') {
+      apiPayload.act_time = values.act_time;
+    } else {
+      apiPayload.act_time = null;
+    }
     
     try {
       if (isEdit && initialValues?.id) {
-        const updatedTask = await updateTask.mutateAsync({ ...taskData, id: initialValues.id });
+        const updatedTask = await updateTask.mutateAsync({ ...apiPayload, id: initialValues.id });
         updateTaskInContext(updatedTask, isToday);
       } else {
-        const newTask = await addTask.mutateAsync(taskData);
+        const newTask = await addTask.mutateAsync(apiPayload);
         addTaskToContext(newTask, isToday);
       }
       
@@ -137,6 +153,8 @@ export function TaskModal({
               placeholder="Nhập thời gian thực tế"
               min={0}
               {...formTask.getInputProps('act_time')}
+              withAsterisk={formTask.values.status === 'Done'}
+              disabled={formTask.values.status === 'To Do'}
             />
             <Select
               label="Trạng thái"

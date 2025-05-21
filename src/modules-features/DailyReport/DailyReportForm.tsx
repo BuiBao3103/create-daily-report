@@ -31,13 +31,11 @@ function DailyReportFormContent() {
 
   const {
     intern,
-    isIntern,
     name,
     waitingForTask,
     yesterdayDate,
     todayDate,
     setIntern,
-    setIsIntern,
     setName,
     setWaitingForTask,
     setYesterdayDate,
@@ -81,14 +79,6 @@ function DailyReportFormContent() {
         <Stack gap="md">
           <Title order={3}>Báo cáo công việc</Title>
           <Group grow align="flex-start">
-            <TextInput
-              label="Họ và tên"
-              placeholder="Nhập họ và tên"
-              disabled={isIntern}
-              withAsterisk
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
             <DateInput
               label="Ngày báo cáo"
               placeholder="Chọn ngày"
@@ -100,15 +90,6 @@ function DailyReportFormContent() {
               value={todayDate}
               onChange={(date) => date && setTodayDate(date)}
             />
-            <Checkbox
-              label="Là thực tập sinh"
-              mt={25}
-              checked={isIntern}
-              onChange={(e) => setIsIntern(e.currentTarget.checked)}
-            />
-          </Group>
-
-          {isIntern && (
             <Select
               allowDeselect={false}
               label="Chọn thực tập sinh"
@@ -123,7 +104,7 @@ function DailyReportFormContent() {
               value={intern?.toString()}
               onChange={(value) => setIntern(value ? parseInt(value) : null)}
             />
-          )}
+          </Group>
 
           <Stack gap="md">
             <Stack gap="xs" style={{ position: 'relative' }}>
