@@ -3,21 +3,20 @@ import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { InternsResponse } from "@/interfaces/intern.types";
 
 const ENDPOINT = "/api/interns/";
+
 export default function useInterns({
     options,
-    params
+    params = ''
 }: {
     options?: Partial<UseQueryOptions<InternsResponse, Error>>,
     params?: string
 } = {}) {
-    const query = useQuery<InternsResponse>({
-        queryKey: [ENDPOINT + params],
+    return useQuery<InternsResponse, Error>({
+        queryKey: [ENDPOINT, params],
         queryFn: async () => {
             const response = await baseAxios.get(ENDPOINT + params);
-            console.log(response.data);
-            return response.data
+            return response.data;
         },
         ...options
-    })
-    return query;
+    });
 }

@@ -3,14 +3,12 @@
 import { IconLock } from '@tabler/icons-react';
 import {
   Center,
-  Checkbox,
   Group,
   Paper as MantinePaper,
   Paper,
   Select,
   Stack,
   Text,
-  TextInput,
   ThemeIcon,
   Title,
 } from '@mantine/core';
@@ -31,7 +29,6 @@ function DailyReportFormContent() {
 
   const {
     intern,
-    name,
     waitingForTask,
     yesterdayDate,
     todayDate,
@@ -40,7 +37,6 @@ function DailyReportFormContent() {
     setWaitingForTask,
     setYesterdayDate,
     setTodayDate,
-    addTask,
   } = useDailyReport();
 
   useEffect(() => {

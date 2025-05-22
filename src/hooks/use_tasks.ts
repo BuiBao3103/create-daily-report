@@ -1,6 +1,6 @@
 import baseAxios from "@/api/baseAxios";
 import { Task, TasksResponse } from "@/interfaces/task.types";
-import { useMutation, UseMutationOptions, useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { useMutation, UseMutationOptions, useQuery, UseQueryOptions, useQueryClient } from "@tanstack/react-query";
 
 const ENDPOINT = "/api/tasks/";
 
@@ -11,42 +11,57 @@ export default function useTask({
     options?: Partial<UseQueryOptions<TasksResponse, Error>>,
     params?: string
 } = {}) {
-    const query = useQuery<TasksResponse>({
+    return useQuery<TasksResponse, Error>({
         queryKey: [ENDPOINT, params],
         queryFn: async () => {
             const response = await baseAxios.get(ENDPOINT + params);
-            return response.data
+            return response.data;
         },
         ...options
     });
-    return query;
 }
 
 export function useTaskMutations() {
-    const addTask = useMutation({
-        mutationFn: async (task: Task) => {
-            const res = await baseAxios.post(ENDPOINT, task);
-            return res.data;
+    const queryClient = useQueryClient();
+
+    const addTask = useMutation<Task, Error, Task>({
+        mutationFn: async (task) => {
+            const cleanedTask = {
+                ...task,
+                act_time: task.status === 'Done' ? task.act_time : undefined,
+                est_time: task.est_time || undefined,
+            };
+            const response = await baseAxios.post(ENDPOINT, cleanedTask);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [ENDPOINT] });
         }
     });
 
-    const updateTask = useMutation({
-        mutationFn: async (task: Task) => {
-            const res = await baseAxios.put(`${ENDPOINT}${task.id}/`, task);
-            return res.data;
+    const updateTask = useMutation<Task, Error, Task>({
+        mutationFn: async (task) => {
+            const cleanedTask = {
+                ...task,
+                act_time: task.status === 'Done' ? task.act_time : undefined,
+                est_time: task.est_time ?? undefined,
+            };
+            const response = await baseAxios.put(`${ENDPOINT}${task.id}/`, cleanedTask);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [ENDPOINT] });
         }
     });
 
-    const deleteTask = useMutation({
-        mutationFn: async (id: number) => {
-            const res = await baseAxios.delete(`${ENDPOINT}${id}/`);
-            return res.data;
+    const deleteTask = useMutation<void, Error, number>({
+        mutationFn: async (id) => {
+            await baseAxios.delete(`${ENDPOINT}${id}/`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [ENDPOINT] });
         }
     });
 
-    return {
-        addTask,
-        updateTask,
-        deleteTask
-    };
+    return { addTask, updateTask, deleteTask };
 }

@@ -1,39 +1,27 @@
 import { Fragment, useState } from 'react';
-import {
-  IconCheck,
-  IconClock,
-  IconCopy,
-  IconEdit,
-  IconTable,
-  IconTextCaption,
-  IconTrash,
-  IconX,
-} from '@tabler/icons-react';
+import { IconCheck, IconClock, IconCopy, IconTable, IconTextCaption } from '@tabler/icons-react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   ActionIcon,
   Badge,
+  Button,
   Center,
-  Flex,
   Group,
+  Modal,
+  NumberInput,
   Paper,
   SegmentedControl,
   Stack,
-  Table,
   Text,
   ThemeIcon,
   Tooltip,
-  Modal,
-  Button,
-  NumberInput,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { AbsenceType } from '@/interfaces/DailyReportForm.types';
+import { useTaskMutations } from '@/hooks/use_tasks';
 import { Task } from '@/interfaces/task.types';
 import { useDailyReport } from '../../context/DailyReportContext';
+import { TaskTable } from './components/TaskTable';
 import { TaskModal } from './TaskModal';
-import { useTaskMutations } from '@/hooks/use_tasks';
-import { useQueryClient } from '@tanstack/react-query';
-import { useForm } from '@mantine/form';
 
 const formatDate = (date: Date) => {
   return date.toLocaleDateString('vi-VN', {
@@ -87,9 +75,7 @@ export function DailyReportOutput() {
   const [deleteModal, deleteModalHandlers] = useDisclosure(false);
   const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [isTodayTask, setIsTodayTask] = useState(true);
-  const [continueModal, setContinueModal] = useState(false);
   const [doneModal, setDoneModal] = useState(false);
-  const [continueHours, setContinueHours] = useState<number | undefined>(undefined);
   const [doneHours, setDoneHours] = useState<number | undefined>(undefined);
   const {
     name,
@@ -100,10 +86,9 @@ export function DailyReportOutput() {
     todayDate,
     yesterdayTasks,
     todayTasks,
-    updateTask,
-    deleteTask,
   } = useDailyReport();
-  const { deleteTask: deleteTaskMutation, addTask, updateTask: taskMutationsUpdateTask } = useTaskMutations();
+  const { deleteTask: deleteTaskMutation, updateTask: taskMutationsUpdateTask, addTask: addTaskMutation } =
+    useTaskMutations();
   const queryClient = useQueryClient();
 
   const handleCopy = async () => {
@@ -131,14 +116,6 @@ export function DailyReportOutput() {
     editModalHandlers.open();
   };
 
-  const handleEditSubmit = async () => {
-    if (currentTask) {
-      await taskMutationsUpdateTask.mutateAsync(currentTask);
-    }
-    editModalHandlers.close();
-    setCurrentTask(null);
-  };
-
   const handleDeleteClick = (task: Task, isToday: boolean) => {
     setCurrentTask(task);
     setIsTodayTask(isToday);
@@ -149,73 +126,42 @@ export function DailyReportOutput() {
     if (currentTask?.id) {
       await deleteTaskMutation.mutateAsync(currentTask.id);
       await queryClient.refetchQueries({
-        queryKey: ['/api/tasks/', `?intern=${intern}&date=${isTodayTask ? todayDate : yesterdayDate}`]
+        queryKey: [
+          '/api/tasks/',
+          `?intern=${intern}&date=${isTodayTask ? todayDate : yesterdayDate}`,
+        ],
       });
     }
     deleteModalHandlers.close();
     setCurrentTask(null);
   };
 
-  const handleDoneClick = () => {
-    setDoneModal(true);
-    setContinueModal(false);
-  };
-
-  const handleDoneSubmit = async () => {
-    if (currentTask && typeof doneHours === 'number') {
-      await taskMutationsUpdateTask.mutateAsync({ ...currentTask, status: 'Done', act_time: doneHours });
-      editModalHandlers.close();
-      setDoneModal(false);
-      setCurrentTask(null);
-      setDoneHours(undefined);
-    }
-  };
-
-  const handleContinueClick = () => {
-    setContinueModal(true);
-    setDoneModal(false);
-  };
-
-  const handleContinueSubmit = async () => {
-    if (currentTask && typeof continueHours === 'number') {
-      const newTask = {
-        ...currentTask,
-        id: undefined,
-        date: todayDate,
-        est_time: continueHours,
-        act_time: undefined,
-        status: 'To Do',
-        content: currentTask.content + ' (làm tiếp)',
-      };
-      await taskMutationsUpdateTask.mutateAsync(newTask);
-      editModalHandlers.close();
-      setContinueModal(false);
-      setCurrentTask(null);
-      setContinueHours(undefined);
-    }
-  };
-
-  // Handler for special actions from TaskModal
   const handleSpecialAction = async (
     action: 'done' | 'continue',
     value: number | { est_time: number; act_time: number }
   ) => {
     if (!currentTask) return;
     if (action === 'done' && typeof value === 'number') {
-      // Cập nhật task hôm qua thành Done
-      await taskMutationsUpdateTask.mutateAsync({ ...currentTask, status: 'Done', act_time: value });
+      await taskMutationsUpdateTask.mutateAsync({
+        ...currentTask,
+        status: 'Done',
+        act_time: value,
+      });
       await queryClient.refetchQueries({
-        queryKey: ['/api/tasks/', `?intern=${intern}&date=${yesterdayDate}`]
+        queryKey: ['/api/tasks/', `?intern=${intern}&date=${yesterdayDate}`],
       });
       editModalHandlers.close();
       setCurrentTask(null);
     } else if (action === 'continue' && typeof value === 'object' && value) {
-      // 1. Cập nhật act_time hôm qua
-      await taskMutationsUpdateTask.mutateAsync({ ...currentTask, act_time: value.act_time });
-      await queryClient.refetchQueries({
-        queryKey: ['/api/tasks/', `?intern=${intern}&date=${yesterdayDate}`]
+      await taskMutationsUpdateTask.mutateAsync({
+        ...currentTask,
+        est_time: value.act_time,
+        act_time: value.act_time,
+        status: 'Done',
       });
-      // 2. Tạo task mới cho hôm nay
+      await queryClient.refetchQueries({
+        queryKey: ['/api/tasks/', `?intern=${intern}&date=${yesterdayDate}`],
+      });
       const newTask = {
         ...currentTask,
         id: undefined,
@@ -225,9 +171,9 @@ export function DailyReportOutput() {
         status: 'To Do',
         content: currentTask.content + ' (làm tiếp)',
       };
-      await addTask.mutateAsync(newTask);
+      await addTaskMutation.mutateAsync(newTask);
       await queryClient.refetchQueries({
-        queryKey: ['/api/tasks/', `?intern=${intern}&date=${todayDate}`]
+        queryKey: ['/api/tasks/', `?intern=${intern}&date=${todayDate}`],
       });
       editModalHandlers.close();
       setCurrentTask(null);
@@ -334,80 +280,12 @@ export function DailyReportOutput() {
                       {data.yesterdayTasks.length} công việc
                     </Badge>
                   </Group>
-                  <Paper withBorder radius="md" style={{ overflowX: 'auto' }}>
-                    <Table
-                      striped
-                      highlightOnHover
-                      withTableBorder
-                      withColumnBorders
-                      style={{
-                        '& thead tr th': {
-                          backgroundColor: 'var(--mantine-color-blue-0)',
-                          color: 'var(--mantine-color-blue-7)',
-                          fontWeight: 600,
-                          fontSize: '0.875rem',
-                          padding: '0.75rem 1rem',
-                        },
-                        '& tbody tr td': {
-                          padding: '0.75rem 1rem',
-                          fontSize: '0.875rem',
-                        },
-                        '& tbody tr:hover': {
-                          backgroundColor: 'var(--mantine-color-blue-0)',
-                        },
-                      }}
-                    >
-                      <Table.Thead>
-                        <Table.Tr>
-                          <Table.Th>Task ID</Table.Th>
-                          <Table.Th>Dự án</Table.Th>
-                          <Table.Th>Nội dung</Table.Th>
-                          <Table.Th>Dự kiến</Table.Th>
-                          <Table.Th>Thực tế</Table.Th>
-                          <Table.Th>Trạng thái</Table.Th>
-                          <Table.Th>Hành động</Table.Th>
-                        </Table.Tr>
-                      </Table.Thead>
-                      <Table.Tbody>
-                        {yesterdayTasks.map((task: Task, index: number) => (
-                          <Table.Tr key={index}>
-                            <Table.Td>{task.task_id || '-'}</Table.Td>
-                            <Table.Td>{task.project || '-'}</Table.Td>
-                            <Table.Td>{task.content || '-'}</Table.Td>
-                            <Table.Td>{task.est_time ? `${task.est_time}h` : '-'}</Table.Td>
-                            <Table.Td>{task.act_time ? `${task.act_time}h` : '-'}</Table.Td>
-                            <Table.Td>{task.status || '-'}</Table.Td>
-                            <Table.Td>
-                              <Flex gap={4} justify="flex-end">
-                                <Tooltip label="Chỉnh sửa">
-                                  <ActionIcon
-                                    variant="light"
-                                    color="yellow"
-                                    size="sm"
-                                    radius="xl"
-                                    onClick={() => handleEditClick(task, index, false)}
-                                  >
-                                    <IconEdit size={14} />
-                                  </ActionIcon>
-                                </Tooltip>
-                                <Tooltip label="Xóa">
-                                  <ActionIcon
-                                    variant="light"
-                                    color="red"
-                                    size="sm"
-                                    radius="xl"
-                                    onClick={() => handleDeleteClick(task, false)}
-                                  >
-                                    <IconTrash size={14} />
-                                  </ActionIcon>
-                                </Tooltip>
-                              </Flex>
-                            </Table.Td>
-                          </Table.Tr>
-                        ))}
-                      </Table.Tbody>
-                    </Table>
-                  </Paper>
+                  <TaskTable
+                    tasks={yesterdayTasks}
+                    onEdit={handleEditClick}
+                    onDelete={handleDeleteClick}
+                    isToday={false}
+                  />
                 </Stack>
 
                 <Stack gap="md">
@@ -424,80 +302,12 @@ export function DailyReportOutput() {
                       {data.todayTasks.length} công việc
                     </Badge>
                   </Group>
-                  <Paper withBorder radius="md" style={{ overflowX: 'auto' }}>
-                    <Table
-                      striped
-                      highlightOnHover
-                      withTableBorder
-                      withColumnBorders
-                      style={{
-                        '& thead tr th': {
-                          backgroundColor: 'var(--mantine-color-blue-0)',
-                          color: 'var(--mantine-color-blue-7)',
-                          fontWeight: 600,
-                          fontSize: '0.875rem',
-                          padding: '0.75rem 1rem',
-                        },
-                        '& tbody tr td': {
-                          padding: '0.75rem 1rem',
-                          fontSize: '0.875rem',
-                        },
-                        '& tbody tr:hover': {
-                          backgroundColor: 'var(--mantine-color-blue-0)',
-                        },
-                      }}
-                    >
-                      <Table.Thead>
-                        <Table.Tr>
-                          <Table.Th>Task ID</Table.Th>
-                          <Table.Th>Dự án</Table.Th>
-                          <Table.Th>Nội dung</Table.Th>
-                          <Table.Th>Dự kiến</Table.Th>
-                          <Table.Th>Thực tế</Table.Th>
-                          <Table.Th>Trạng thái</Table.Th>
-                          <Table.Th>Hành động</Table.Th>
-                        </Table.Tr>
-                      </Table.Thead>
-                      <Table.Tbody>
-                        {todayTasks.map((task: Task, index: number) => (
-                          <Table.Tr key={index}>
-                            <Table.Td>{task.task_id || '-'}</Table.Td>
-                            <Table.Td>{task.project || '-'}</Table.Td>
-                            <Table.Td>{task.content || '-'}</Table.Td>
-                            <Table.Td>{task.est_time ? `${task.est_time}h` : '-'}</Table.Td>
-                            <Table.Td>{task.act_time ? `${task.act_time}h` : '-'}</Table.Td>
-                            <Table.Td>{task.status || '-'}</Table.Td>
-                            <Table.Td>
-                              <Flex gap={4} justify="flex-end">
-                                <Tooltip label="Chỉnh sửa">
-                                  <ActionIcon
-                                    variant="light"
-                                    color="yellow"
-                                    size="sm"
-                                    radius="xl"
-                                    onClick={() => handleEditClick(task, index, true)}
-                                  >
-                                    <IconEdit size={14} />
-                                  </ActionIcon>
-                                </Tooltip>
-                                <Tooltip label="Xóa">
-                                  <ActionIcon
-                                    variant="light"
-                                    color="red"
-                                    size="sm"
-                                    radius="xl"
-                                    onClick={() => handleDeleteClick(task, true)}
-                                  >
-                                    <IconTrash size={14} />
-                                  </ActionIcon>
-                                </Tooltip>
-                              </Flex>
-                            </Table.Td>
-                          </Table.Tr>
-                        ))}
-                      </Table.Tbody>
-                    </Table>
-                  </Paper>
+                  <TaskTable
+                    tasks={todayTasks}
+                    onEdit={handleEditClick}
+                    onDelete={handleDeleteClick}
+                    isToday={true}
+                  />
                   {data.waitingForTask && (
                     <Group gap="xs">
                       <ThemeIcon size="sm" radius="xl" variant="light" color="yellow">
@@ -524,7 +334,10 @@ export function DailyReportOutput() {
           workDate={currentTask?.date ?? ''}
           opened={editModal}
           onClose={editModalHandlers.close}
-          onSubmit={handleEditSubmit}
+          onSubmit={() => {
+            editModalHandlers.close();
+            setCurrentTask(null);
+          }}
           initialValues={currentTask || undefined}
           isEdit={true}
           isToday={isTodayTask}
@@ -532,12 +345,7 @@ export function DailyReportOutput() {
         />
       )}
 
-      <Modal
-        opened={deleteModal}
-        onClose={deleteModalHandlers.close}
-        title="Xác nhận xóa"
-        centered
-      >
+      <Modal opened={deleteModal} onClose={deleteModalHandlers.close} title="Xác nhận xóa" centered>
         <Stack>
           <Text>Bạn có chắc chắn muốn xóa task này?</Text>
           <Group justify="flex-end">
@@ -547,40 +355,6 @@ export function DailyReportOutput() {
             <Button color="red" onClick={handleDeleteConfirm}>
               Xóa
             </Button>
-          </Group>
-        </Stack>
-      </Modal>
-
-      <Modal opened={doneModal} onClose={() => setDoneModal(false)} title="Nhập thời gian thực tế" centered>
-        <Stack>
-          <Text>Nhập số giờ thực tế đã làm để hoàn thành task:</Text>
-          <NumberInput
-            label="Thời gian thực tế (giờ)"
-            min={0}
-            value={doneHours}
-            onChange={(val) => setDoneHours(typeof val === 'number' ? val : undefined)}
-            withAsterisk
-          />
-          <Group justify="flex-end">
-            <Button variant="light" onClick={() => setDoneModal(false)}>Hủy</Button>
-            <Button color="green" onClick={handleDoneSubmit} disabled={typeof doneHours !== 'number' || doneHours <= 0}>Cập nhật</Button>
-          </Group>
-        </Stack>
-      </Modal>
-
-      <Modal opened={continueModal} onClose={() => setContinueModal(false)} title="Làm tiếp task cho hôm nay" centered>
-        <Stack>
-          <Text>Nhập số giờ bạn sẽ tiếp tục làm task này hôm nay:</Text>
-          <NumberInput
-            label="Thời gian dự kiến (giờ)"
-            min={0}
-            value={continueHours}
-            onChange={(val) => setContinueHours(typeof val === 'number' ? val : undefined)}
-            withAsterisk
-          />
-          <Group justify="flex-end">
-            <Button variant="light" onClick={() => setContinueModal(false)}>Hủy</Button>
-            <Button color="blue" onClick={handleContinueSubmit} disabled={typeof continueHours !== 'number' || continueHours <= 0}>Tạo task mới</Button>
           </Group>
         </Stack>
       </Modal>
