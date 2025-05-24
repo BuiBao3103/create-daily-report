@@ -2,6 +2,8 @@ import { Autocomplete, Button, Modal, Select, Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { absenceReasons } from '@/constants/TaskForm.constants';
 import { AbsenceType } from '@/interfaces/DailyReportForm.types';
+import { useAbsenceMutations } from '@/hooks/use_absences';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AbsenceModalProps {
   readonly opened: boolean;
@@ -11,6 +13,8 @@ interface AbsenceModalProps {
   readonly absenceReason: string;
   readonly setAbsenceReason: (reason: string) => void;
   readonly onSubmit: () => void;
+  readonly date: string;
+  readonly intern: number;
 }
 
 export function AbsenceModal({
@@ -21,7 +25,12 @@ export function AbsenceModal({
   absenceReason,
   setAbsenceReason,
   onSubmit,
+  date,
+  intern,
 }: AbsenceModalProps) {
+  const { addAbsence } = useAbsenceMutations();
+  const queryClient = useQueryClient();
+
   const form = useForm({
     initialValues: {
       type: absenceType,
@@ -33,15 +42,28 @@ export function AbsenceModal({
     },
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const validationResult = form.validate();
     if (validationResult.hasErrors) {
       return;
     }
-    setAbsenceType(form.values.type);
-    setAbsenceReason(form.values.reason);
-    onSubmit();
-    onClose();
+
+    try {
+      await addAbsence.mutateAsync({
+        date,
+        type: form.values.type,
+        reason: form.values.reason,
+        intern,
+      });
+
+      setAbsenceType(form.values.type);
+      setAbsenceReason(form.values.reason);
+      await queryClient.invalidateQueries({ queryKey: ['/api/absences/'] });
+      onSubmit();
+      onClose();
+    } catch (error) {
+      console.error('Error adding absence:', error);
+    }
   };
 
   return (
@@ -73,7 +95,10 @@ export function AbsenceModal({
           withAsterisk
           error={form.errors.reason}
         />
-        <Button onClick={handleSubmit} disabled={!form.isValid()}>
+        <Button 
+          onClick={handleSubmit} 
+          disabled={!form.isValid() || addAbsence.isPending}
+        >
           Xác nhận
         </Button>
       </Stack>

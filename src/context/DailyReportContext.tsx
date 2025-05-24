@@ -3,7 +3,7 @@ import useTask from '@/hooks/use_tasks';
 import { Task } from '@/interfaces/task.types';
 import { useQueryClient } from '@tanstack/react-query';
 
-interface DailyReportContextType {
+export interface DailyReportContextType {
   intern: number | null;
   isIntern: boolean;
   name: string;
@@ -21,6 +21,12 @@ interface DailyReportContextType {
   addTask: (task: Task, isToday: boolean) => void;
   updateTask: (task: Task, isToday: boolean) => void;
   deleteTask: (id: number, isToday: boolean) => void;
+  selectedIntern: number;
+  setSelectedIntern: (intern: number) => void;
+  workDate: string;
+  setWorkDate: (date: string) => void;
+  setYesterdayTasks: (tasks: Task[]) => void;
+  setTodayTasks: (tasks: Task[]) => void;
 }
 
 const DailyReportContext = createContext<DailyReportContextType | undefined>(undefined);
@@ -51,6 +57,8 @@ export function DailyReportProvider({ children }: { readonly children: React.Rea
   const [todayDate, setTodayDate] = useState<string>('');
   const [yesterdayTasks, setYesterdayTasks] = useState<Task[]>([]);
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
+  const [selectedIntern, setSelectedIntern] = useState(0);
+  const [workDate, setWorkDate] = useState('');
 
   const queryYesterday = useTask({
     params: `?intern=${intern}&date=${yesterdayDate}`,
@@ -142,8 +150,14 @@ export function DailyReportProvider({ children }: { readonly children: React.Rea
       addTask,
       updateTask,
       deleteTask,
+      selectedIntern,
+      setSelectedIntern,
+      workDate,
+      setWorkDate,
+      setYesterdayTasks,
+      setTodayTasks,
     }),
-    [intern, isIntern, name, waitingForTask, yesterdayDate, todayDate, yesterdayTasks, todayTasks]
+    [intern, isIntern, name, waitingForTask, yesterdayDate, todayDate, yesterdayTasks, todayTasks, selectedIntern, workDate]
   );
 
   return <DailyReportContext.Provider value={value}>{children}</DailyReportContext.Provider>;

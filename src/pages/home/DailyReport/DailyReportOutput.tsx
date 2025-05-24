@@ -19,9 +19,11 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { useTaskMutations } from '@/hooks/use_tasks';
 import { Task } from '@/interfaces/task.types';
-import { useDailyReport } from '../../context/DailyReportContext';
 import { TaskTable } from './components/TaskTable';
 import { TaskModal } from './TaskModal';
+import { AbsenceModal } from './AbsenceModal';
+import { AbsenceType } from '@/interfaces/DailyReportForm.types';
+import { useDailyReport } from '@/context/DailyReportContext';
 
 const formatDate = (date: Date) => {
   return date.toLocaleDateString('vi-VN', {
@@ -77,6 +79,9 @@ export function DailyReportOutput() {
   const [isTodayTask, setIsTodayTask] = useState(true);
   const [doneModal, setDoneModal] = useState(false);
   const [doneHours, setDoneHours] = useState<number | undefined>(undefined);
+  const [absenceModalOpened, setAbsenceModalOpened] = useState(false);
+  const [absenceType, setAbsenceType] = useState<AbsenceType>(AbsenceType.SCHEDULED);
+  const [absenceReason, setAbsenceReason] = useState('');
   const {
     name,
     intern,
@@ -86,6 +91,8 @@ export function DailyReportOutput() {
     todayDate,
     yesterdayTasks,
     todayTasks,
+    selectedIntern,
+    workDate,
   } = useDailyReport();
   const { deleteTask: deleteTaskMutation, updateTask: taskMutationsUpdateTask, addTask: addTaskMutation } =
     useTaskMutations();
@@ -178,6 +185,10 @@ export function DailyReportOutput() {
       editModalHandlers.close();
       setCurrentTask(null);
     }
+  };
+
+  const handleAbsenceSubmit = () => {
+    // Implementation of handleAbsenceSubmit
   };
 
   const data = {
@@ -358,6 +369,18 @@ export function DailyReportOutput() {
           </Group>
         </Stack>
       </Modal>
+
+      <AbsenceModal
+        opened={absenceModalOpened}
+        onClose={() => setAbsenceModalOpened(false)}
+        absenceType={absenceType}
+        setAbsenceType={setAbsenceType}
+        absenceReason={absenceReason}
+        setAbsenceReason={setAbsenceReason}
+        onSubmit={handleAbsenceSubmit}
+        date={workDate}
+        intern={selectedIntern}
+      />
     </Paper>
   );
 }

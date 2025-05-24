@@ -1,16 +1,16 @@
 import { keyframes } from '@emotion/react';
 import { Box, Container, Grid, Paper, Title } from '@mantine/core';
-import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
-import { DailyReportProvider } from '../context/DailyReportContext';
-import { DailyReportForm } from '../modules-features/DailyReport/DailyReportForm';
-import { DailyReportOutput } from '../modules-features/DailyReport/DailyReportOutput';
+import { ColorSchemeToggle } from '../../components/ColorSchemeToggle/ColorSchemeToggle';
+import { DailyReportProvider } from '../../context/DailyReportContext';
+import { DailyReportForm } from './DailyReport/DailyReportForm';
+import { DailyReportOutput } from './DailyReport/DailyReportOutput';
 
 const fadeIn = keyframes({
   from: { opacity: 0, transform: 'translateY(20px)' },
   to: { opacity: 1, transform: 'translateY(0)' },
 });
 
-export function HomePage() {
+function HomePage() {
   return (
     <Box
       style={{
@@ -94,3 +94,5 @@ export function HomePage() {
     </Box>
   );
 }
+
+export default HomePage;

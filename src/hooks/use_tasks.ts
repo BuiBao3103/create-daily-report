@@ -22,9 +22,9 @@ export default function useTask({
 }
 
 export function useTaskMutations() {
-    const queryClient = useQueryClient();
 
     const addTask = useMutation<Task, Error, Task>({
+        mutationKey: ['addTask'],
         mutationFn: async (task) => {
             const cleanedTask = {
                 ...task,
@@ -35,11 +35,11 @@ export function useTaskMutations() {
             return response.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [ENDPOINT] });
         }
     });
 
     const updateTask = useMutation<Task, Error, Task>({
+        mutationKey: ['updateTask'],
         mutationFn: async (task) => {
             const cleanedTask = {
                 ...task,
@@ -50,16 +50,15 @@ export function useTaskMutations() {
             return response.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [ENDPOINT] });
         }
     });
 
     const deleteTask = useMutation<void, Error, number>({
+        mutationKey: ['deleteTask'],
         mutationFn: async (id) => {
             await baseAxios.delete(`${ENDPOINT}${id}/`);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [ENDPOINT] });
         }
     });
 

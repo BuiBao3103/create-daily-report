@@ -16,11 +16,11 @@ import { DateInput } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import useInterns from '@/hooks/use_interns';
 import { AbsenceType } from '@/interfaces/DailyReportForm.types';
-import { useDailyReport } from '../../context/DailyReportContext';
 import { AbsenceModal } from './AbsenceModal';
 import { DaySection } from './DaySection';
 import { TaskModal } from './TaskModal';
 import { useEffect } from 'react';
+import { useDailyReport } from '@/context/DailyReportContext';
 
 function DailyReportFormContent() {
   const query = useInterns({
@@ -221,6 +221,8 @@ function DailyReportFormContent() {
         onSubmit={() => {
           closeYesterdayAbsenceModal();
         }}
+        date={yesterdayDate}
+        intern={intern || 0}
       />
 
       <AbsenceModal
@@ -233,6 +235,8 @@ function DailyReportFormContent() {
         onSubmit={() => {
           closeTodayAbsenceModal();
         }}
+        date={todayDate}
+        intern={intern || 0}
       />
     </Stack>
   );
