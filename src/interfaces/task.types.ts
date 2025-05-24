@@ -3,8 +3,8 @@ export interface Task {
   task_id?: string;
   content: string;
   project?: string;
-  est_time?: number;
-  act_time?: number;
+  estimate_time?: number;
+  actual_time?: number;
   status: string;
   date: string;
   intern?: number | null;

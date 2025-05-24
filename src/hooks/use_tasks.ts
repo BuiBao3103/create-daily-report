@@ -28,8 +28,8 @@ export function useTaskMutations() {
         mutationFn: async (task) => {
             const cleanedTask = {
                 ...task,
-                act_time: task.status === 'Done' ? task.act_time : undefined,
-                est_time: task.est_time || undefined,
+                actual_time: task.status === 'Done' ? task.actual_time : undefined,
+                estimate_time: task.estimate_time || undefined,
             };
             const response = await baseAxios.post(ENDPOINT, cleanedTask);
             return response.data;
@@ -43,8 +43,8 @@ export function useTaskMutations() {
         mutationFn: async (task) => {
             const cleanedTask = {
                 ...task,
-                act_time: task.status === 'Done' ? task.act_time : undefined,
-                est_time: task.est_time ?? undefined,
+                actual_time: task.status === 'Done' ? task.actual_time : undefined,
+                estimate_time: task.estimate_time ?? undefined,
             };
             const response = await baseAxios.put(`${ENDPOINT}${task.id}/`, cleanedTask);
             return response.data;

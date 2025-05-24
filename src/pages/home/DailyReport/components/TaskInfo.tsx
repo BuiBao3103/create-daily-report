@@ -33,7 +33,7 @@ export function TaskInfo({ task }: TaskInfoProps) {
           | Nội dung: <b>{task.content}</b>
         </Text>
         <Text size="sm">
-          | Dự kiến: <b>{task.est_time ?? '-'}</b> giờ
+          | Dự kiến: <b>{task.estimate_time ?? '-'}</b> giờ
         </Text>
         <Text size="sm">
           | Trạng thái: <b>{task.status}</b>

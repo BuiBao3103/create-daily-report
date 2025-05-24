@@ -51,8 +51,8 @@ export function TaskTable({ tasks, onEdit, onDelete, isToday }: TaskTableProps) 
               <Table.Td>{task.task_id || '-'}</Table.Td>
               <Table.Td>{task.project || '-'}</Table.Td>
               <Table.Td>{task.content || '-'}</Table.Td>
-              <Table.Td>{task.est_time ? `${task.est_time}h` : '-'}</Table.Td>
-              <Table.Td>{task.act_time ? `${task.act_time}h` : '-'}</Table.Td>
+              <Table.Td>{task.estimate_time ? `${task.estimate_time}h` : '-'}</Table.Td>
+              <Table.Td>{task.actual_time ? `${task.actual_time}h` : '-'}</Table.Td>
               <Table.Td>{task.status || '-'}</Table.Td>
               <Table.Td>
                 <Flex gap={4} justify="flex-end">

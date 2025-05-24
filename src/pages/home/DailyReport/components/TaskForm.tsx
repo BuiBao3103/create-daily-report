@@ -18,17 +18,17 @@ export function TaskForm({ initialValues, isEdit = false, onSubmit, onCancel, is
       content: '',
       task_id: '',
       project: '',
-      est_time: undefined,
-      act_time: undefined,
+      estimate_time: undefined,
+      actual_time: undefined,
       status: 'To Do',
       intern: null,
       ...initialValues,
     },
     validate: {
       content: (value) => (value.trim().length > 0 ? null : 'Vui lòng nhập nội dung công việc'),
-      est_time: (value) => (value && value > 0 ? null : 'Vui lòng nhập thời gian dự kiến'),
+      estimate_time: (value) => (value && value > 0 ? null : 'Vui lòng nhập thời gian dự kiến'),
       status: (value) => (value ? null : 'Vui lòng chọn trạng thái'),
-      act_time: (value, values) => {
+      actual_time: (value, values) => {
         if (values.status === 'Done') {
           return value && value > 0
             ? null
@@ -39,8 +39,8 @@ export function TaskForm({ initialValues, isEdit = false, onSubmit, onCancel, is
     },
     transformValues: (values) => ({
       ...values,
-      act_time: values.status === 'Done' ? values.act_time : undefined,
-      est_time: values.est_time ?? undefined,
+      actual_time: values.status === 'Done' ? values.actual_time : undefined,
+      estimate_time: values.estimate_time ?? undefined,
     }),
   });
 
@@ -75,13 +75,13 @@ export function TaskForm({ initialValues, isEdit = false, onSubmit, onCancel, is
             placeholder="Nhập thời gian dự kiến"
             min={0}
             withAsterisk
-            {...form.getInputProps('est_time')}
+            {...form.getInputProps('estimate_time')}
           />
           <NumberInput
             label="Thời gian thực tế (giờ)"
             placeholder="Nhập thời gian thực tế"
             min={0}
-            {...form.getInputProps('act_time')}
+            {...form.getInputProps('actual_time')}
             withAsterisk={form.values.status === 'Done'}
             disabled={form.values.status === 'To Do'}
           />

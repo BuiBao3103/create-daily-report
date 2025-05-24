@@ -1,5 +1,12 @@
 import { Fragment, useState } from 'react';
-import { IconCheck, IconClock, IconCopy, IconTable, IconTextCaption, IconTrash } from '@tabler/icons-react';
+import {
+  IconCheck,
+  IconClock,
+  IconCopy,
+  IconTable,
+  IconTextCaption,
+  IconTrash,
+} from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   ActionIcon,
@@ -17,16 +24,15 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { useDailyReport } from '@/context/DailyReportContext';
+import useAbsences, { useAbsenceMutations } from '@/hooks/use_absences';
 import { useTaskMutations } from '@/hooks/use_tasks';
+import { Absence } from '@/interfaces/absence.types';
+import { AbsenceType } from '@/interfaces/DailyReportForm.types';
 import { Task } from '@/interfaces/task.types';
+import { AbsenceModal } from './AbsenceModal';
 import { TaskTable } from './components/TaskTable';
 import { TaskModal } from './TaskModal';
-import { AbsenceModal } from './AbsenceModal';
-import { AbsenceType } from '@/interfaces/DailyReportForm.types';
-import { useDailyReport } from '@/context/DailyReportContext';
-import useAbsences from '@/hooks/use_absences';
-import { Absence } from '@/interfaces/absence.types';
-import { useAbsenceMutations } from '@/hooks/use_absences';
 
 const formatDate = (date: Date) => {
   return date.toLocaleDateString('vi-VN', {
@@ -47,8 +53,8 @@ const formatTextOutput = (data: any, yesterdayAbsences: any, todayAbsences: any)
   data.yesterdayTasks?.forEach((task: Task) => {
     const taskId = task.task_id ? `[${task.task_id}]` : '';
     const project = task.project ? `(${task.project})` : '';
-    const estTime = task.est_time ? `dự kiến: ${task.est_time}h` : '';
-    const actTime = task.act_time ? `thực tế: ${task.act_time}h` : '';
+    const estTime = task.estimate_time ? `dự kiến: ${task.estimate_time}h` : '';
+    const actTime = task.actual_time ? `thực tế: ${task.actual_time}h` : '';
     const timeInfo = [estTime, actTime].filter(Boolean).join(' - ');
     const status = task.status ? task.status : '';
 
@@ -63,8 +69,8 @@ const formatTextOutput = (data: any, yesterdayAbsences: any, todayAbsences: any)
   data.todayTasks?.forEach((task: Task) => {
     const taskId = task.task_id ? `[${task.task_id}]` : '';
     const project = task.project ? `(${task.project})` : '';
-    const estTime = task.est_time ? `dự kiến: ${task.est_time}h` : '';
-    const actTime = task.act_time ? `thực tế: ${task.act_time}h` : '';
+    const estTime = task.estimate_time ? `dự kiến: ${task.estimate_time}h` : '';
+    const actTime = task.actual_time ? `thực tế: ${task.actual_time}h` : '';
     const timeInfo = [estTime, actTime].filter(Boolean).join(' - ');
     const status = task.status ? task.status : '';
 
@@ -102,16 +108,16 @@ export function DailyReportOutput() {
     todayTasks,
     selectedIntern,
     workDate,
+    yesterdayAbsences,
+    todayAbsences,
   } = useDailyReport();
-  const { deleteTask: deleteTaskMutation, updateTask: taskMutationsUpdateTask, addTask: addTaskMutation } =
-    useTaskMutations();
+  const {
+    deleteTask: deleteTaskMutation,
+    updateTask: taskMutationsUpdateTask,
+    addTask: addTaskMutation,
+  } = useTaskMutations();
   const queryClient = useQueryClient();
-  const { data: yesterdayAbsences } = useAbsences({
-    params: `?intern=${intern}&date=${yesterdayDate}`
-  });
-  const { data: todayAbsences } = useAbsences({
-    params: `?intern=${intern}&date=${todayDate}`
-  });
+
   const { deleteAbsence } = useAbsenceMutations();
 
   const handleCopy = async () => {
@@ -161,14 +167,14 @@ export function DailyReportOutput() {
 
   const handleSpecialAction = async (
     action: 'done' | 'continue',
-    value: number | { est_time: number; act_time: number }
+    value: number | { estimate_time: number; actual_time: number }
   ) => {
     if (!currentTask) return;
     if (action === 'done' && typeof value === 'number') {
       await taskMutationsUpdateTask.mutateAsync({
         ...currentTask,
         status: 'Done',
-        act_time: value,
+        actual_time: value,
       });
       await queryClient.refetchQueries({
         queryKey: ['/api/tasks/', `?intern=${intern}&date=${yesterdayDate}`],
@@ -178,8 +184,8 @@ export function DailyReportOutput() {
     } else if (action === 'continue' && typeof value === 'object' && value) {
       await taskMutationsUpdateTask.mutateAsync({
         ...currentTask,
-        est_time: value.act_time,
-        act_time: value.act_time,
+        estimate_time: value.actual_time,
+        actual_time: value.actual_time,
         status: 'Done',
       });
       await queryClient.refetchQueries({
@@ -189,8 +195,8 @@ export function DailyReportOutput() {
         ...currentTask,
         id: undefined,
         date: todayDate,
-        est_time: value.est_time,
-        act_time: undefined,
+        estimate_time: value.estimate_time,
+        actual_time: undefined,
         status: 'To Do',
         content: currentTask.content + ' (làm tiếp)',
       };
@@ -316,22 +322,29 @@ export function DailyReportOutput() {
                       {data.yesterdayTasks.length} công việc
                     </Badge>
                   </Group>
-                  {yesterdayAbsences?.results && yesterdayAbsences.results.length > 0 && (
+                  {yesterdayAbsences.length > 0 && (
                     <Stack gap="xs">
-                      <Text fw={500} c="dimmed" size="sm">Nghỉ phép</Text>
-                      {yesterdayAbsences.results.map((absence: Absence) => (
+                      <Text fw={500} c="dimmed" size="sm">
+                        Nghỉ phép
+                      </Text>
+                      {yesterdayAbsences.map((absence: Absence) => (
                         <Group key={absence.id} gap="xs" justify="space-between">
                           <Group gap="xs">
                             <ThemeIcon size="sm" radius="xl" variant="light" color="red">
                               <IconClock size={14} />
                             </ThemeIcon>
                             <Text size="sm">
-                              {absence.type} - {absence.reason}
+                              {absence.type == AbsenceType.SCHEDULED
+                                ? 'Nghỉ theo lịch'
+                                : absence.type == AbsenceType.EXCUSED
+                                  ? 'Nghỉ có phép'
+                                  : 'Nghỉ không phép'}{' '}
+                              - {absence.reason}
                             </Text>
                           </Group>
-                          <ActionIcon 
-                            variant="light" 
-                            color="red" 
+                          <ActionIcon
+                            variant="light"
+                            color="red"
                             size="sm"
                             onClick={() => handleDeleteAbsence(absence.id)}
                             loading={deleteAbsence.isPending}
@@ -364,22 +377,29 @@ export function DailyReportOutput() {
                       {data.todayTasks.length} công việc
                     </Badge>
                   </Group>
-                  {todayAbsences?.results && todayAbsences.results.length > 0 && (
+                  {todayAbsences.length > 0 && (
                     <Stack gap="xs">
-                      <Text fw={500} c="dimmed" size="sm">Nghỉ phép</Text>
-                      {todayAbsences.results.map((absence: Absence) => (
+                      <Text fw={500} c="dimmed" size="sm">
+                        Nghỉ phép
+                      </Text>
+                      {todayAbsences.map((absence: Absence) => (
                         <Group key={absence.id} gap="xs" justify="space-between">
                           <Group gap="xs">
                             <ThemeIcon size="sm" radius="xl" variant="light" color="red">
                               <IconClock size={14} />
                             </ThemeIcon>
                             <Text size="sm">
-                              {absence.type} - {absence.reason}
+                              {absence.type == AbsenceType.SCHEDULED
+                                ? 'Nghỉ theo lịch'
+                                : absence.type == AbsenceType.EXCUSED
+                                  ? 'Nghỉ có phép'
+                                  : 'Nghỉ không phép'}{' '}
+                              - {absence.reason}
                             </Text>
                           </Group>
-                          <ActionIcon 
-                            variant="light" 
-                            color="red" 
+                          <ActionIcon
+                            variant="light"
+                            color="red"
                             size="sm"
                             onClick={() => handleDeleteAbsence(absence.id)}
                             loading={deleteAbsence.isPending}

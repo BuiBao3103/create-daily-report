@@ -18,7 +18,7 @@ interface TaskModalProps {
   readonly isToday?: boolean;
   readonly onSpecialAction?: (
     action: 'done' | 'continue',
-    value: number | { est_time: number; act_time: number }
+    value: number | { estimate_time: number; actual_time: number }
   ) => void;
 }
 
@@ -127,10 +127,10 @@ export function TaskModal({
                   onSpecialAction &&
                   typeof continueActTime === 'number' &&
                   initialValues &&
-                  typeof initialValues.est_time === 'number'
+                  typeof initialValues.estimate_time === 'number'
                 ) {
-                  const newEst = Math.max(1, initialValues.est_time - continueActTime);
-                  onSpecialAction('continue', { est_time: newEst, act_time: continueActTime });
+                  const newEst = Math.max(1, initialValues.estimate_time - continueActTime);
+                  onSpecialAction('continue', { estimate_time: newEst, actual_time: continueActTime });
                   handleClose();
                 }
               }}
