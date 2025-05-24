@@ -32,6 +32,8 @@ function DailyReportFormContent() {
     waitingForTask,
     yesterdayDate,
     todayDate,
+    yesterdayAbsences,
+    todayAbsences,
     setIntern,
     setName,
     setWaitingForTask,
@@ -116,6 +118,7 @@ function DailyReportFormContent() {
                 onAddTask={() => openYesterdayTaskModal()}
                 onAddAbsence={() => openYesterdayAbsenceModal()}
                 label="Hôm qua"
+                hasAbsence={yesterdayAbsences.length > 0}
               />
               {!intern && (
                 <MantinePaper
@@ -159,6 +162,7 @@ function DailyReportFormContent() {
                 onAddAbsence={() => openTodayAbsenceModal()}
                 onWaitingForTaskChange={(checked) => setWaitingForTask(checked)}
                 label="Hôm nay"
+                hasAbsence={todayAbsences.length > 0}
               />
               {!intern && (
                 <MantinePaper

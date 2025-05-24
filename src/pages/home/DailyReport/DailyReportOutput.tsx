@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react';
-import { IconCheck, IconClock, IconCopy, IconTable, IconTextCaption } from '@tabler/icons-react';
+import { IconCheck, IconClock, IconCopy, IconTable, IconTextCaption, IconTrash } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   ActionIcon,
@@ -24,6 +24,9 @@ import { TaskModal } from './TaskModal';
 import { AbsenceModal } from './AbsenceModal';
 import { AbsenceType } from '@/interfaces/DailyReportForm.types';
 import { useDailyReport } from '@/context/DailyReportContext';
+import useAbsences from '@/hooks/use_absences';
+import { Absence } from '@/interfaces/absence.types';
+import { useAbsenceMutations } from '@/hooks/use_absences';
 
 const formatDate = (date: Date) => {
   return date.toLocaleDateString('vi-VN', {
@@ -33,11 +36,14 @@ const formatDate = (date: Date) => {
   });
 };
 
-const formatTextOutput = (data: any) => {
+const formatTextOutput = (data: any, yesterdayAbsences: any, todayAbsences: any) => {
   let output = `${data.name}${data.isIntern ? ' (Thực tập sinh)' : ''}\n`;
   output += `Daily (${formatDate(new Date(data.todayDate))})\n\n`;
 
   output += `# ${formatDate(new Date(data.yesterdayDate))}:\n`;
+  yesterdayAbsences?.results?.forEach((absence: any) => {
+    output += `+ [Nghỉ ${absence.type}] ${absence.reason}\n`;
+  });
   data.yesterdayTasks?.forEach((task: Task) => {
     const taskId = task.task_id ? `[${task.task_id}]` : '';
     const project = task.project ? `(${task.project})` : '';
@@ -51,6 +57,9 @@ const formatTextOutput = (data: any) => {
   });
 
   output += `\n# ${formatDate(new Date(data.todayDate))}:\n`;
+  todayAbsences?.results?.forEach((absence: any) => {
+    output += `+ [Nghỉ ${absence.type}] ${absence.reason}\n`;
+  });
   data.todayTasks?.forEach((task: Task) => {
     const taskId = task.task_id ? `[${task.task_id}]` : '';
     const project = task.project ? `(${task.project})` : '';
@@ -97,6 +106,13 @@ export function DailyReportOutput() {
   const { deleteTask: deleteTaskMutation, updateTask: taskMutationsUpdateTask, addTask: addTaskMutation } =
     useTaskMutations();
   const queryClient = useQueryClient();
+  const { data: yesterdayAbsences } = useAbsences({
+    params: `?intern=${intern}&date=${yesterdayDate}`
+  });
+  const { data: todayAbsences } = useAbsences({
+    params: `?intern=${intern}&date=${todayDate}`
+  });
+  const { deleteAbsence } = useAbsenceMutations();
 
   const handleCopy = async () => {
     try {
@@ -109,7 +125,7 @@ export function DailyReportOutput() {
         yesterdayTasks,
         todayTasks,
       };
-      await navigator.clipboard.writeText(formatTextOutput(data));
+      await navigator.clipboard.writeText(formatTextOutput(data, yesterdayAbsences, todayAbsences));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
@@ -189,6 +205,15 @@ export function DailyReportOutput() {
 
   const handleAbsenceSubmit = () => {
     // Implementation of handleAbsenceSubmit
+  };
+
+  const handleDeleteAbsence = async (id: number) => {
+    try {
+      await deleteAbsence.mutateAsync(id);
+      await queryClient.invalidateQueries({ queryKey: ['/api/absences/'] });
+    } catch (error) {
+      console.error('Error deleting absence:', error);
+    }
   };
 
   const data = {
@@ -291,6 +316,32 @@ export function DailyReportOutput() {
                       {data.yesterdayTasks.length} công việc
                     </Badge>
                   </Group>
+                  {yesterdayAbsences?.results && yesterdayAbsences.results.length > 0 && (
+                    <Stack gap="xs">
+                      <Text fw={500} c="dimmed" size="sm">Nghỉ phép</Text>
+                      {yesterdayAbsences.results.map((absence: Absence) => (
+                        <Group key={absence.id} gap="xs" justify="space-between">
+                          <Group gap="xs">
+                            <ThemeIcon size="sm" radius="xl" variant="light" color="red">
+                              <IconClock size={14} />
+                            </ThemeIcon>
+                            <Text size="sm">
+                              {absence.type} - {absence.reason}
+                            </Text>
+                          </Group>
+                          <ActionIcon 
+                            variant="light" 
+                            color="red" 
+                            size="sm"
+                            onClick={() => handleDeleteAbsence(absence.id)}
+                            loading={deleteAbsence.isPending}
+                          >
+                            <IconTrash size={14} />
+                          </ActionIcon>
+                        </Group>
+                      ))}
+                    </Stack>
+                  )}
                   <TaskTable
                     tasks={yesterdayTasks}
                     onEdit={handleEditClick}
@@ -313,6 +364,32 @@ export function DailyReportOutput() {
                       {data.todayTasks.length} công việc
                     </Badge>
                   </Group>
+                  {todayAbsences?.results && todayAbsences.results.length > 0 && (
+                    <Stack gap="xs">
+                      <Text fw={500} c="dimmed" size="sm">Nghỉ phép</Text>
+                      {todayAbsences.results.map((absence: Absence) => (
+                        <Group key={absence.id} gap="xs" justify="space-between">
+                          <Group gap="xs">
+                            <ThemeIcon size="sm" radius="xl" variant="light" color="red">
+                              <IconClock size={14} />
+                            </ThemeIcon>
+                            <Text size="sm">
+                              {absence.type} - {absence.reason}
+                            </Text>
+                          </Group>
+                          <ActionIcon 
+                            variant="light" 
+                            color="red" 
+                            size="sm"
+                            onClick={() => handleDeleteAbsence(absence.id)}
+                            loading={deleteAbsence.isPending}
+                          >
+                            <IconTrash size={14} />
+                          </ActionIcon>
+                        </Group>
+                      ))}
+                    </Stack>
+                  )}
                   <TaskTable
                     tasks={todayTasks}
                     onEdit={handleEditClick}
@@ -333,7 +410,9 @@ export function DailyReportOutput() {
               </Stack>
             ) : (
               <Paper p="md" withBorder radius="md" bg="var(--mantine-color-body)">
-                <Text style={{ whiteSpace: 'pre-wrap' }}>{formatTextOutput(data)}</Text>
+                <Text style={{ whiteSpace: 'pre-wrap' }}>
+                  {formatTextOutput(data, yesterdayAbsences, todayAbsences)}
+                </Text>
               </Paper>
             )}
           </Stack>

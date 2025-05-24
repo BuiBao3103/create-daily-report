@@ -7,6 +7,7 @@ interface DaySectionProps {
   readonly onAddAbsence: () => void;
   readonly onWaitingForTaskChange?: (checked: boolean) => void;
   readonly label: string;
+  readonly hasAbsence?: boolean;
 }
 
 export function DaySection({
@@ -15,6 +16,7 @@ export function DaySection({
   onAddAbsence,
   onWaitingForTaskChange,
   label,
+  hasAbsence = false,
 }: DaySectionProps) {
   const isToday = label === 'Hôm nay';
 
@@ -36,6 +38,7 @@ export function DaySection({
               size="xs"
               leftSection={<IconCalendarOff size={14} />}
               onClick={onAddAbsence}
+              disabled={hasAbsence}
             >
               Nghỉ
             </Button>

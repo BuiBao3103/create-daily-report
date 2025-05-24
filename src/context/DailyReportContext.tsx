@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import useTask from '@/hooks/use_tasks';
 import { Task } from '@/interfaces/task.types';
+import { Absence } from '@/interfaces/absence.types';
 import { useQueryClient } from '@tanstack/react-query';
+import useAbsences from '@/hooks/use_absences';
 
 export interface DailyReportContextType {
   intern: number | null;
@@ -12,6 +14,8 @@ export interface DailyReportContextType {
   todayDate: string;
   yesterdayTasks: Task[];
   todayTasks: Task[];
+  yesterdayAbsences: Absence[];
+  todayAbsences: Absence[];
   setIntern: (intern: number | null) => void;
   setIsIntern: (isIntern: boolean) => void;
   setName: (name: string) => void;
@@ -27,6 +31,8 @@ export interface DailyReportContextType {
   setWorkDate: (date: string) => void;
   setYesterdayTasks: (tasks: Task[]) => void;
   setTodayTasks: (tasks: Task[]) => void;
+  setYesterdayAbsences: (absences: Absence[]) => void;
+  setTodayAbsences: (absences: Absence[]) => void;
 }
 
 const DailyReportContext = createContext<DailyReportContextType | undefined>(undefined);
@@ -57,6 +63,8 @@ export function DailyReportProvider({ children }: { readonly children: React.Rea
   const [todayDate, setTodayDate] = useState<string>('');
   const [yesterdayTasks, setYesterdayTasks] = useState<Task[]>([]);
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
+  const [yesterdayAbsences, setYesterdayAbsences] = useState<Absence[]>([]);
+  const [todayAbsences, setTodayAbsences] = useState<Absence[]>([]);
   const [selectedIntern, setSelectedIntern] = useState(0);
   const [workDate, setWorkDate] = useState('');
 
@@ -66,6 +74,16 @@ export function DailyReportProvider({ children }: { readonly children: React.Rea
   });
 
   const queryToday = useTask({
+    params: `?intern=${intern}&date=${todayDate}`,
+    options: { enabled: !!intern && !!todayDate },
+  });
+
+  const queryYesterdayAbsences = useAbsences({
+    params: `?intern=${intern}&date=${yesterdayDate}`,
+    options: { enabled: !!intern && !!yesterdayDate },
+  });
+
+  const queryTodayAbsences = useAbsences({
     params: `?intern=${intern}&date=${todayDate}`,
     options: { enabled: !!intern && !!todayDate },
   });
@@ -81,6 +99,18 @@ export function DailyReportProvider({ children }: { readonly children: React.Rea
       setTodayTasks(queryToday.data.results);
     }
   }, [queryToday.data]);
+
+  useEffect(() => {
+    if (queryYesterdayAbsences.data?.results) {
+      setYesterdayAbsences(queryYesterdayAbsences.data.results);
+    }
+  }, [queryYesterdayAbsences.data]);
+
+  useEffect(() => {
+    if (queryTodayAbsences.data?.results) {
+      setTodayAbsences(queryTodayAbsences.data.results);
+    }
+  }, [queryTodayAbsences.data]);
 
   useEffect(() => {
     const today = new Date();
@@ -141,6 +171,8 @@ export function DailyReportProvider({ children }: { readonly children: React.Rea
       todayDate,
       yesterdayTasks,
       todayTasks,
+      yesterdayAbsences,
+      todayAbsences,
       setIntern: handleSetIntern,
       setIsIntern,
       setName,
@@ -156,8 +188,10 @@ export function DailyReportProvider({ children }: { readonly children: React.Rea
       setWorkDate,
       setYesterdayTasks,
       setTodayTasks,
+      setYesterdayAbsences,
+      setTodayAbsences,
     }),
-    [intern, isIntern, name, waitingForTask, yesterdayDate, todayDate, yesterdayTasks, todayTasks, selectedIntern, workDate]
+    [intern, isIntern, name, waitingForTask, yesterdayDate, todayDate, yesterdayTasks, todayTasks, selectedIntern, workDate, yesterdayAbsences, todayAbsences]
   );
 
   return <DailyReportContext.Provider value={value}>{children}</DailyReportContext.Provider>;
