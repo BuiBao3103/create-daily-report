@@ -22,8 +22,14 @@ import {
   SegmentedControl,
   TextInput,
   Title,
+  Loader,
+  Stack,
+  Text,
+  useMantineColorScheme,
 } from '@mantine/core';
 import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
+import baseAxios from '@/api/baseAxios';
+import axios from 'axios';
 
 ChartJS.register(
   LineElement,
@@ -46,11 +52,14 @@ type ChartType = 'line' | 'bar' | 'doughnut';
 export default function ChatPage() {
   const [chatInput, setChatInput] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [sessionId, setSessionId] = useState<string>(() => crypto.randomUUID());
   const [chartType, setChartType] = useState<ChartType>('bar');
   const [chartData, setChartData] = useState<ChartData<ChartType>>({
     labels: [],
     datasets: [],
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const { colorScheme } = useMantineColorScheme();
 
   useEffect(() => {
     // 👉 MOCK dữ liệu giống như API trả về từ n8n
@@ -96,36 +105,30 @@ export default function ChatPage() {
     */
   }, []);
 
-  const handleChatSubmit = (e: FormEvent) => {
+  const handleChatSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const userMessage = chatInput.trim();
     if (!userMessage) return;
 
     setChatHistory((prev) => [...prev, { sender: 'user', message: userMessage }]);
     setChatInput('');
+    setIsLoading(true);
 
-    // 👉 MOCK phản hồi AI
-    // setTimeout(() => {
-    //   setChatHistory((prev) => [
-    //     ...prev,
-    //     { sender: 'bot', message: 'Đây là phản hồi mẫu từ AI (dùng mock).' },
-    //   ]);
-    // }, 500);
-
-    // ✅ Khi dùng thật:
-
-    fetch('http://localhost:5678/webhook-test/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: userMessage }),
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        setChatHistory((prev) => [  
-          ...prev,
-          { sender: 'bot', message: result.response },
-        ]);
-      });
+    try {
+      const response = await axios.post('http://localhost:5678/webhook-test/chat', { message: userMessage, sessionId });
+      setChatHistory((prev) => [
+        ...prev,
+        { sender: 'bot', message: response.data.response },
+      ]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setChatHistory((prev) => [
+        ...prev,
+        { sender: 'bot', message: 'Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.' },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -136,32 +139,73 @@ export default function ChatPage() {
       <Box
         style={{
           flex: 1,
-          borderRight: '1px solid #eee',
           display: 'flex',
           flexDirection: 'column',
           padding: '20px',
+          backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-0)',
         }}
       >
-        <Title order={3} mb="md">
+        <Title order={3} mb="md" c={colorScheme === 'dark' ? 'white' : 'dark'}>
           Chat với AI
         </Title>
 
         <ScrollArea style={{ flex: 1, marginBottom: '1rem' }}>
-          {chatHistory.map((msg, i) => (
-            <Paper
-              key={i}
-              shadow="xs"
-              p="xs"
-              mb="sm"
-              withBorder
-              style={{
-                alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                maxWidth: '80%',
-              }}
-            >
-              <b>{msg.sender === 'user' ? 'Bạn' : 'AI'}:</b> {msg.message}
-            </Paper>
-          ))}
+          <Stack gap="md">
+            {chatHistory.map((msg, i) => (
+              <Box
+                key={i}
+                style={{
+                  display: 'flex',
+                  justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                }}
+              >
+                <Paper
+                  shadow="xs"
+                  p="md"
+                  withBorder
+                  style={{
+                    maxWidth: '70%',
+                    backgroundColor: msg.sender === 'user' 
+                      ? (colorScheme === 'dark' ? 'var(--mantine-color-blue-9)' : 'var(--mantine-color-blue-1)')
+                      : (colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)'),
+                  }}
+                >
+                  <Stack gap="xs">
+                    <Text size="sm" fw={500} c={colorScheme === 'dark' ? 'gray.4' : 'dimmed'}>
+                      {msg.sender === 'user' ? 'Bạn' : 'AI'}
+                    </Text>
+                    <Text c={colorScheme === 'dark' ? 'white' : 'dark'}>
+                      {msg.message}
+                    </Text>
+                  </Stack>
+                </Paper>
+              </Box>
+            ))}
+            {isLoading && (
+              <Box
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                }}
+              >
+                <Paper
+                  shadow="xs"
+                  p="md"
+                  withBorder
+                  style={{
+                    backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)',
+                  }}
+                >
+                  <Group gap="xs">
+                    <Loader size="sm" color={colorScheme === 'dark' ? 'white' : 'blue'} />
+                    <Text c={colorScheme === 'dark' ? 'gray.4' : 'dimmed'}>
+                      AI đang trả lời...
+                    </Text>
+                  </Group>
+                </Paper>
+              </Box>
+            )}
+          </Stack>
         </ScrollArea>
 
         <form onSubmit={handleChatSubmit}>
@@ -171,8 +215,21 @@ export default function ChatPage() {
               onChange={(e) => setChatInput(e.currentTarget.value)}
               placeholder="Nhập tin nhắn..."
               style={{ flex: 1 }}
+              disabled={isLoading}
+              styles={{
+                input: {
+                  backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'white',
+                  color: colorScheme === 'dark' ? 'white' : 'dark',
+                },
+              }}
             />
-            <Button type="submit">Gửi</Button>
+            <Button 
+              type="submit" 
+              loading={isLoading}
+              variant={colorScheme === 'dark' ? 'light' : 'filled'}
+            >
+              Gửi
+            </Button>
           </Group>
         </form>
       </Box>
