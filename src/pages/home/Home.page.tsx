@@ -1,14 +1,16 @@
 import { keyframes } from '@emotion/react';
-import { Box, Container, Grid, Paper, Title } from '@mantine/core';
+import { Box, Button, Container, Grid, Group, Paper, Title } from '@mantine/core';
 import { ColorSchemeToggle } from '../../components/ColorSchemeToggle/ColorSchemeToggle';
 import { DailyReportProvider } from '../../context/DailyReportContext';
 import { DailyReportForm } from './DailyReport/DailyReportForm';
 import { DailyReportOutput } from './DailyReport/DailyReportOutput';
+import { Link } from 'react-router-dom'; // sử dụng Link để tránh lỗi hook
 
 const fadeIn = keyframes({
   from: { opacity: 0, transform: 'translateY(20px)' },
   to: { opacity: 1, transform: 'translateY(0)' },
 });
+
 
 function HomePage() {
   return (
@@ -31,7 +33,14 @@ function HomePage() {
           animation: `${fadeIn} 0.5s ease-out`,
         }}
       >
-        <ColorSchemeToggle />
+
+        <Group part="apart" mb="md">
+          <ColorSchemeToggle />
+
+          <Button component={Link} to="/chat-ai" color="teal" variant="light">
+            ChatAI
+          </Button>
+        </Group>
         <Title
           order={1}
           ta="center"

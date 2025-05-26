@@ -105,28 +105,27 @@ export default function ChatPage() {
     setChatInput('');
 
     // 👉 MOCK phản hồi AI
-    setTimeout(() => {
-      setChatHistory((prev) => [
-        ...prev,
-        { sender: 'bot', message: 'Đây là phản hồi mẫu từ AI (dùng mock).' },
-      ]);
-    }, 500);
+    // setTimeout(() => {
+    //   setChatHistory((prev) => [
+    //     ...prev,
+    //     { sender: 'bot', message: 'Đây là phản hồi mẫu từ AI (dùng mock).' },
+    //   ]);
+    // }, 500);
 
     // ✅ Khi dùng thật:
-    /*
-    fetch('https://your-n8n-domain/webhook/chat', {
+
+    fetch('http://localhost:5678/webhook-test/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: userMessage }),
     })
       .then((res) => res.json())
       .then((result) => {
-        setChatHistory((prev) => [
+        setChatHistory((prev) => [  
           ...prev,
           { sender: 'bot', message: result.response },
         ]);
       });
-    */
   };
 
   return (
@@ -179,7 +178,7 @@ export default function ChatPage() {
       </Box>
 
       {/* Chart Section */}
-      <Box style={{ flex: 1, padding: '20px' }}>
+      {/* <Box style={{ flex: 1, padding: '20px' }}>
         <Group mb="md">
           <Title order={3}>Biểu đồ từ dữ liệu</Title>
           <SegmentedControl
@@ -196,7 +195,7 @@ export default function ChatPage() {
         {chartType === 'bar' && <Bar data={chartData as ChartData<'bar'>} />}
         {chartType === 'line' && <Line data={chartData as ChartData<'line'>} />}
         {chartType === 'doughnut' && <Doughnut data={chartData as ChartData<'doughnut'>} />}
-      </Box>
+      </Box> */}
     </Container>
   );
 }
