@@ -116,11 +116,11 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5678/webhook-test/chat', {
+      const response = await axios.post('http://localhost:5678/webhook/chat', {
         message: userMessage,
         sessionId,
       });
-      setChatHistory((prev) => [...prev, { sender: 'bot', message: response.data.response }]);
+      setChatHistory((prev) => [...prev, { sender: 'bot', message: response.data[0].text }]);
     } catch (error) {
       console.error('Error sending message:', error);
       setChatHistory((prev) => [
