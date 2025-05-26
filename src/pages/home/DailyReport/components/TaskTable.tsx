@@ -48,7 +48,7 @@ export function TaskTable({ tasks, onEdit, onDelete, isToday }: TaskTableProps) 
         <Table.Tbody>
           {tasks.map((task: Task, index: number) => (
             <Table.Tr key={index}>
-              <Table.Td>{task.task_id || '-'}</Table.Td>
+              <Table.Td>{task.backlog_id || '-'}</Table.Td>
               <Table.Td>{task.project || '-'}</Table.Td>
               <Table.Td>{task.content || '-'}</Table.Td>
               <Table.Td>{task.estimate_time ? `${task.estimate_time}h` : '-'}</Table.Td>

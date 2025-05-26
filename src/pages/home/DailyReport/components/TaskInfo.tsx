@@ -27,7 +27,7 @@ export function TaskInfo({ task }: TaskInfoProps) {
       </Text>
       <Group gap={8}>
         <Text size="sm">
-          ID: <b>{task.task_id ?? '-'}</b>
+          ID: <b>{task.backlog_id ?? '-'}</b>
         </Text>
         <Text size="sm">
           | Nội dung: <b>{task.content}</b>

@@ -1,6 +1,6 @@
 export interface Task {
   id?: number;
-  task_id?: string;
+  backlog_id?: string;
   content: string;
   project?: string;
   estimate_time?: number;

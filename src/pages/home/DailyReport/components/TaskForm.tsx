@@ -16,7 +16,7 @@ export function TaskForm({ initialValues, isEdit = false, onSubmit, onCancel, is
   const form = useForm<Omit<Task, 'date'>>({
     initialValues: {
       content: '',
-      task_id: '',
+      backlog_id: '',
       project: '',
       estimate_time: undefined,
       actual_time: undefined,
@@ -51,7 +51,7 @@ export function TaskForm({ initialValues, isEdit = false, onSubmit, onCancel, is
           <TextInput
             label="Task ID"
             placeholder="Nhập task ID"
-            {...form.getInputProps('task_id')}
+            {...form.getInputProps('backlog_id')}
           />
           <Autocomplete
             label="Dự án"

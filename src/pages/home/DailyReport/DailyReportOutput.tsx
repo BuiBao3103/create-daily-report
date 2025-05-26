@@ -51,7 +51,7 @@ const formatTextOutput = (data: any, yesterdayAbsences: any, todayAbsences: any)
     output += `+ [Nghỉ ${absence.type}] ${absence.reason}\n`;
   });
   data.yesterdayTasks?.forEach((task: Task) => {
-    const taskId = task.task_id ? `[${task.task_id}]` : '';
+    const taskId = task.backlog_id ? `[${task.backlog_id}]` : '';
     const project = task.project ? `(${task.project})` : '';
     const estTime = task.estimate_time ? `dự kiến: ${task.estimate_time}h` : '';
     const actTime = task.actual_time ? `thực tế: ${task.actual_time}h` : '';
@@ -67,7 +67,7 @@ const formatTextOutput = (data: any, yesterdayAbsences: any, todayAbsences: any)
     output += `+ [Nghỉ ${absence.type}] ${absence.reason}\n`;
   });
   data.todayTasks?.forEach((task: Task) => {
-    const taskId = task.task_id ? `[${task.task_id}]` : '';
+    const taskId = task.backlog_id ? `[${task.backlog_id}]` : '';
     const project = task.project ? `(${task.project})` : '';
     const estTime = task.estimate_time ? `dự kiến: ${task.estimate_time}h` : '';
     const actTime = task.actual_time ? `thực tế: ${task.actual_time}h` : '';
