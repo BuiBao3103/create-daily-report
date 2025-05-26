@@ -1,4 +1,6 @@
 import React, { FormEvent, useEffect, useState } from 'react';
+import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
 import {
   ArcElement,
   BarElement,
@@ -17,19 +19,18 @@ import {
   Button,
   Container,
   Group,
+  Loader,
   Paper,
   ScrollArea,
   SegmentedControl,
-  TextInput,
-  Title,
-  Loader,
   Stack,
   Text,
+  TextInput,
+  Title,
   useMantineColorScheme,
 } from '@mantine/core';
-import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
 import baseAxios from '@/api/baseAxios';
-import axios from 'axios';
+import { ColorSchemeToggle } from '../components/ColorSchemeToggle/ColorSchemeToggle';
 
 ChartJS.register(
   LineElement,
@@ -115,11 +116,11 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5678/webhook-test/chat', { message: userMessage, sessionId });
-      setChatHistory((prev) => [
-        ...prev,
-        { sender: 'bot', message: response.data.response },
-      ]);
+      const response = await axios.post('http://localhost:5678/webhook-test/chat', {
+        message: userMessage,
+        sessionId,
+      });
+      setChatHistory((prev) => [...prev, { sender: 'bot', message: response.data.response }]);
     } catch (error) {
       console.error('Error sending message:', error);
       setChatHistory((prev) => [
@@ -142,7 +143,8 @@ export default function ChatPage() {
           display: 'flex',
           flexDirection: 'column',
           padding: '20px',
-          backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-0)',
+          backgroundColor:
+            colorScheme === 'dark' ? 'var(--mantine-color-dark-7)' : 'var(--mantine-color-gray-0)',
         }}
       >
         <Title order={3} mb="md" c={colorScheme === 'dark' ? 'white' : 'dark'}>
@@ -165,18 +167,38 @@ export default function ChatPage() {
                   withBorder
                   style={{
                     maxWidth: '70%',
-                    backgroundColor: msg.sender === 'user' 
-                      ? (colorScheme === 'dark' ? 'var(--mantine-color-blue-9)' : 'var(--mantine-color-blue-1)')
-                      : (colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)'),
+                    backgroundColor:
+                      msg.sender === 'user'
+                        ? colorScheme === 'dark'
+                          ? 'var(--mantine-color-blue-9)'
+                          : 'var(--mantine-color-blue-1)'
+                        : colorScheme === 'dark'
+                          ? 'var(--mantine-color-dark-6)'
+                          : 'var(--mantine-color-gray-1)',
                   }}
                 >
                   <Stack gap="xs">
                     <Text size="sm" fw={500} c={colorScheme === 'dark' ? 'gray.4' : 'dimmed'}>
                       {msg.sender === 'user' ? 'Bạn' : 'AI'}
                     </Text>
-                    <Text c={colorScheme === 'dark' ? 'white' : 'dark'}>
-                      {msg.message}
-                    </Text>
+                    <Box
+                      style={{
+                        color: colorScheme === 'dark' ? 'white' : 'dark',
+                        '& ul': {
+                          marginLeft: '1.5rem',
+                          marginTop: '0.5rem',
+                          marginBottom: '0.5rem',
+                        },
+                        '& li': {
+                          marginBottom: '0.25rem',
+                        },
+                        '& strong': {
+                          fontWeight: 700,
+                        },
+                      }}
+                    >
+                      <ReactMarkdown>{msg.message}</ReactMarkdown>
+                    </Box>
                   </Stack>
                 </Paper>
               </Box>
@@ -193,14 +215,15 @@ export default function ChatPage() {
                   p="md"
                   withBorder
                   style={{
-                    backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)',
+                    backgroundColor:
+                      colorScheme === 'dark'
+                        ? 'var(--mantine-color-dark-6)'
+                        : 'var(--mantine-color-gray-1)',
                   }}
                 >
                   <Group gap="xs">
                     <Loader size="sm" color={colorScheme === 'dark' ? 'white' : 'blue'} />
-                    <Text c={colorScheme === 'dark' ? 'gray.4' : 'dimmed'}>
-                      AI đang trả lời...
-                    </Text>
+                    <Text c={colorScheme === 'dark' ? 'gray.4' : 'dimmed'}>AI đang trả lời...</Text>
                   </Group>
                 </Paper>
               </Box>
@@ -223,8 +246,8 @@ export default function ChatPage() {
                 },
               }}
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               loading={isLoading}
               variant={colorScheme === 'dark' ? 'light' : 'filled'}
             >
