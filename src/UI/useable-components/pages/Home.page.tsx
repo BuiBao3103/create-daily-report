@@ -23,7 +23,6 @@ const getDefaultReportData = (): DailyReportData => {
   return {
     date: today,
     intern_name: '',
-    is_intern: false,
     yesterdayDate: yesterday,
     todayDate: today,
     yesterdayTasks: [],
