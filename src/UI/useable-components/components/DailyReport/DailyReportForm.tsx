@@ -81,6 +81,7 @@ function DailyReportFormContent() {
 
           {form.values.isIntern && (
             <Select
+              searchable
               allowDeselect={false}
               label="Chọn thực tập sinh"
               placeholder="Chọn thực tập sinh"
