@@ -4,21 +4,18 @@ import { useEffect } from 'react';
 import { IconLock } from '@tabler/icons-react';
 import {
   Center,
-  Checkbox,
   Group,
   Paper as MantinePaper,
   Paper,
   Select,
   Stack,
   Text,
-  TextInput,
   ThemeIcon,
   Title,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useDisclosure } from '@mantine/hooks';
 import { interns } from '@/Utils/constants/TaskForm.constants';
-import { AbsenceType } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
 import { AbsenceModal } from './components/AbsenceModal';
 import { DaySection } from './components/DaySection';
 import { TaskModal } from './components/TaskModal';
@@ -55,12 +52,25 @@ function DailyReportFormContent() {
         <Stack gap="md">
           <Title order={3}>Báo cáo công việc</Title>
           <Group grow align="flex-start">
-            <TextInput
-              label="Họ và tên"
-              placeholder="Nhập họ và tên"
-              disabled={form.values.isIntern}
+            <Select
+              searchable
+              allowDeselect={false}
+              label="Chọn thực tập sinh"
+              placeholder="Chọn thực tập sinh"
+              data={
+                interns?.map((intern) => ({
+                  value: intern.id.toString(),
+                  label: `${intern.full_name} - ${intern.uni_code}`,
+                })) || []
+              }
               withAsterisk
-              {...form.getInputProps('internName')}
+              onChange={(value) => {
+                const selectedIntern = interns.find((intern) => intern.id.toString() === value);
+                if (selectedIntern) {
+                  form.setFieldValue('internName', selectedIntern.full_name);
+                  form.setFieldValue('internId', selectedIntern.id);
+                }
+              }}
             />
             <DateInput
               label="Ngày báo cáo"
@@ -72,29 +82,7 @@ function DailyReportFormContent() {
               style={{ flex: 1 }}
               {...form.getInputProps('date')}
             />
-            <Checkbox
-              label="Là thực tập sinh"
-              mt={25}
-              {...form.getInputProps('isIntern', { type: 'checkbox' })}
-            />
           </Group>
-
-          {form.values.isIntern && (
-            <Select
-              searchable
-              allowDeselect={false}
-              label="Chọn thực tập sinh"
-              placeholder="Chọn thực tập sinh"
-              data={
-                interns?.map((intern) => ({
-                  value: intern.full_name,
-                  label: `${intern.full_name} - ${intern.uni_code}`,
-                })) || []
-              }
-              withAsterisk
-              {...form.getInputProps('internName')}
-            />
-          )}
 
           <Stack gap="md">
             <Stack gap="xs" style={{ position: 'relative' }}>
@@ -131,7 +119,7 @@ function DailyReportFormContent() {
                         <IconLock size={20} />
                       </ThemeIcon>
                       <Text size="sm" c="dimmed" fw={500}>
-                        Vui lòng nhập họ và tên trước
+                        Vui lòng chọn thực tập sinh
                       </Text>
                     </Stack>
                   </Center>

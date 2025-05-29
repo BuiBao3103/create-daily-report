@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import {
   IconCheck,
   IconClock,
@@ -32,8 +32,9 @@ interface DailyReportOutputProps {
   readonly data?: DailyReportData;
 }
 
-const formatDate = (date: Date) => {
-  return date.toLocaleDateString('vi-VN', {
+const formatDate = (date: Date | string) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleDateString('vi-VN', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -41,7 +42,7 @@ const formatDate = (date: Date) => {
 };
 
 const formatTextOutput = (data: DailyReportData) => {
-  let output = `${data.intern_name}${data.is_intern ? ' (Thực tập sinh)' : ''}\n`;
+  let output = `${data.intern_name}\n`;
   output += `Daily (${formatDate(data.date)})\n\n`;
 
   output += `# ${formatDate(data.yesterdayDate)}:\n`;
@@ -106,20 +107,6 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
     setCurrentTask(task);
     setIsTodayTask(isToday);
     setEditModalOpened(true);
-  };
-
-  const handleEditSubmit = (updatedTask: Task) => {
-    if (currentTask) {
-      const index = isTodayTask
-        ? (data?.todayTasks.findIndex((t) => t === currentTask) ?? -1)
-        : (data?.yesterdayTasks.findIndex((t) => t === currentTask) ?? -1);
-
-      if (index !== -1) {
-        editTask(index, isTodayTask, updatedTask);
-      }
-    }
-    setEditModalOpened(false);
-    setCurrentTask(null);
   };
 
   return (
@@ -196,7 +183,6 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
                   <Group>
                     <Badge size="lg" variant="light" color="blue" radius="md">
                       {data.intern_name}
-                      {data.is_intern ? ' (Thực tập sinh)' : ''}
                     </Badge>
                   </Group>
                   <Group justify="space-between" align="center">
@@ -498,10 +484,13 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
           isToday={isTodayTask}
           initialValues={currentTask || undefined}
           isEdit={true}
-          taskIndex={currentTask ? (isTodayTask 
-            ? data.todayTasks.findIndex((t) => t === currentTask)
-            : data.yesterdayTasks.findIndex((t) => t === currentTask)
-          ) : 0}
+          taskIndex={
+            currentTask
+              ? isTodayTask
+                ? data.todayTasks.findIndex((t) => t === currentTask)
+                : data.yesterdayTasks.findIndex((t) => t === currentTask)
+              : 0
+          }
         />
       )}
     </Paper>

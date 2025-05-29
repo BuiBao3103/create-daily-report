@@ -14,7 +14,6 @@ export interface Absence {
 export interface DailyReportData {
   date: Date;
   intern_name: string;
-  is_intern: boolean;
   yesterdayDate: Date;
   todayDate: Date;
   yesterdayTasks: Task[];
