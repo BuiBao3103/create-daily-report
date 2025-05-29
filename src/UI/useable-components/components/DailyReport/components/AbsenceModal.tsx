@@ -2,30 +2,29 @@ import { Autocomplete, Button, Modal, Select, Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { absenceReasons } from '@/Utils/constants/TaskForm.constants';
 import { AbsenceType } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
+import { useDailyReport } from '../context/DailyReportContext';
 
 interface AbsenceModalProps {
   readonly opened: boolean;
   readonly onClose: () => void;
-  readonly absenceType: AbsenceType;
-  readonly setAbsenceType: (type: AbsenceType) => void;
-  readonly absenceReason: string;
-  readonly setAbsenceReason: (reason: string) => void;
-  readonly onSubmit: () => void;
+  readonly isToday: boolean;
+  readonly initialAbsence?: {
+    type: AbsenceType;
+    reason: string;
+  };
 }
 
 export function AbsenceModal({
   opened,
   onClose,
-  absenceType,
-  setAbsenceType,
-  absenceReason,
-  setAbsenceReason,
-  onSubmit,
+  isToday,
+  initialAbsence,
 }: AbsenceModalProps) {
+  const { addAbsence, editAbsence } = useDailyReport();
   const form = useForm({
-    initialValues: {
-      type: absenceType,
-      reason: absenceReason,
+    initialValues: initialAbsence || {
+      type: AbsenceType.SCHEDULED,
+      reason: '',
     },
     validate: {
       type: (value) => (value ? null : 'Vui lòng chọn loại nghỉ'),
@@ -38,9 +37,13 @@ export function AbsenceModal({
     if (validationResult.hasErrors) {
       return;
     }
-    setAbsenceType(form.values.type);
-    setAbsenceReason(form.values.reason);
-    onSubmit();
+
+    if (initialAbsence) {
+      editAbsence(form.values, isToday);
+    } else {
+      addAbsence(form.values, isToday);
+    }
+    
     onClose();
   };
 

@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useMemo } from 'react';
 import { useForm } from '@mantine/form';
-import { Absence, DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
+import { Absence, AbsenceType, DailyReportData } from '@/Utils/enums/DailyEnum/DailyReportForm.types';
 import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
 
 interface FormValues {
@@ -19,9 +19,16 @@ interface FormValues {
 interface DailyReportContextType {
   form: ReturnType<typeof useForm<FormValues>>;
   updateOutput: () => void;
-  deleteTask: (taskIndex: number, isToday: boolean) => void;
+  // Task management
+  addTask: (task: Task, isToday: boolean) => void;
   editTask: (taskIndex: number, isToday: boolean, updatedTask: Task) => void;
+  deleteTask: (taskIndex: number, isToday: boolean) => void;
+  // Absence management
+  addAbsence: (absence: Absence, isToday: boolean) => void;
+  editAbsence: (absence: Absence, isToday: boolean) => void;
   deleteAbsence: (isToday: boolean) => void;
+  // Waiting for task
+  setWaitingForTask: (value: boolean) => void;
 }
 
 const DailyReportContext = createContext<DailyReportContextType | null>(null);
@@ -73,6 +80,33 @@ export function DailyReportProvider({ children, onSubmit }: DailyReportProviderP
     onSubmit(data);
   };
 
+  // Task management functions
+  const addTask = (task: Task, isToday: boolean) => {
+    if (isToday) {
+      form.setFieldValue('todayTasks', [...form.values.todayTasks, task]);
+    } else {
+      form.setFieldValue('yesterdayTasks', [...form.values.yesterdayTasks, task]);
+    }
+    updateOutput();
+  };
+
+  const editTask = (taskIndex: number, isToday: boolean, updatedTask: Task) => {
+    if (isToday) {
+      const newTasks = [...form.values.todayTasks];
+      if (taskIndex >= 0 && taskIndex < newTasks.length) {
+        newTasks[taskIndex] = { ...updatedTask, workDate: form.values.todayDate };
+        form.setFieldValue('todayTasks', newTasks);
+      }
+    } else {
+      const newTasks = [...form.values.yesterdayTasks];
+      if (taskIndex >= 0 && taskIndex < newTasks.length) {
+        newTasks[taskIndex] = { ...updatedTask, workDate: form.values.yesterdayDate };
+        form.setFieldValue('yesterdayTasks', newTasks);
+      }
+    }
+    updateOutput();
+  };
+
   const deleteTask = (taskIndex: number, isToday: boolean) => {
     if (isToday) {
       const newTasks = form.values.todayTasks.filter((_, index) => index !== taskIndex);
@@ -84,15 +118,21 @@ export function DailyReportProvider({ children, onSubmit }: DailyReportProviderP
     updateOutput();
   };
 
-  const editTask = (taskIndex: number, isToday: boolean, updatedTask: Task) => {
+  // Absence management functions
+  const addAbsence = (absence: Absence, isToday: boolean) => {
     if (isToday) {
-      const newTasks = [...form.values.todayTasks];
-      newTasks[taskIndex] = updatedTask;
-      form.setFieldValue('todayTasks', newTasks);
+      form.setFieldValue('todayAbsence', absence);
     } else {
-      const newTasks = [...form.values.yesterdayTasks];
-      newTasks[taskIndex] = updatedTask;
-      form.setFieldValue('yesterdayTasks', newTasks);
+      form.setFieldValue('yesterdayAbsence', absence);
+    }
+    updateOutput();
+  };
+
+  const editAbsence = (absence: Absence, isToday: boolean) => {
+    if (isToday) {
+      form.setFieldValue('todayAbsence', absence);
+    } else {
+      form.setFieldValue('yesterdayAbsence', absence);
     }
     updateOutput();
   };
@@ -106,14 +146,30 @@ export function DailyReportProvider({ children, onSubmit }: DailyReportProviderP
     updateOutput();
   };
 
+  // Waiting for task
+  const setWaitingForTask = (value: boolean) => {
+    form.setFieldValue('waitingForTask', value);
+    updateOutput();
+  };
+
   // Update output when form values change
   useEffect(() => {
     updateOutput();
   }, [form.values]);
 
   const contextValue = useMemo(
-    () => ({ form, updateOutput, deleteTask, editTask, deleteAbsence }),
-    [form, updateOutput, deleteTask, editTask, deleteAbsence]
+    () => ({
+      form,
+      updateOutput,
+      addTask,
+      editTask,
+      deleteTask,
+      addAbsence,
+      editAbsence,
+      deleteAbsence,
+      setWaitingForTask,
+    }),
+    [form, updateOutput]
   );
 
   return (

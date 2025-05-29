@@ -495,9 +495,13 @@ export function DailyReportOutput({ data }: DailyReportOutputProps) {
             setEditModalOpened(false);
             setCurrentTask(null);
           }}
-          onSubmit={handleEditSubmit}
+          isToday={isTodayTask}
           initialValues={currentTask || undefined}
           isEdit={true}
+          taskIndex={currentTask ? (isTodayTask 
+            ? data.todayTasks.findIndex((t) => t === currentTask)
+            : data.yesterdayTasks.findIndex((t) => t === currentTask)
+          ) : 0}
         />
       )}
     </Paper>

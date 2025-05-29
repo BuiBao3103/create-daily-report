@@ -42,9 +42,9 @@ function DailyReportFormContent() {
     updateOutput();
   }, [form.values.internName, form.values.date]);
 
-  const handleDateChange = (date: Date | null, field: 'yesterdayDate' | 'todayDate') => {
+  const handleDateChange = (date: string | null, field: 'yesterdayDate' | 'todayDate') => {
     if (date) {
-      form.setFieldValue(field, date);
+      form.setFieldValue(field, new Date(date));
       updateOutput();
     }
   };
@@ -105,10 +105,10 @@ function DailyReportFormContent() {
                 maxDate={new Date()}
               />
               <DaySection
-                waitingForTask={false}
-                onAddTask={() => openYesterdayTaskModal()}
-                onAddAbsence={() => openYesterdayAbsenceModal()}
                 label="Hôm qua"
+                hasAbsence={!!form.values.yesterdayAbsence}
+                onAddTask={openYesterdayTaskModal}
+                onAddAbsence={openYesterdayAbsenceModal}
               />
               {!form.values.internName && (
                 <MantinePaper
@@ -147,14 +147,10 @@ function DailyReportFormContent() {
                 maxDate={new Date()}
               />
               <DaySection
-                waitingForTask={form.values.waitingForTask}
-                onAddTask={() => openTodayTaskModal()}
-                onAddAbsence={() => openTodayAbsenceModal()}
-                onWaitingForTaskChange={(checked) => {
-                  form.setFieldValue('waitingForTask', checked);
-                  updateOutput();
-                }}
                 label="Hôm nay"
+                hasAbsence={!!form.values.todayAbsence}
+                onAddTask={openTodayTaskModal}
+                onAddAbsence={openTodayAbsenceModal}
               />
               {!form.values.internName && (
                 <MantinePaper
@@ -191,68 +187,28 @@ function DailyReportFormContent() {
         workDate={form.values.yesterdayDate}
         opened={yesterdayTaskModal}
         onClose={closeYesterdayTaskModal}
-        onSubmit={(task) => {
-          form.setFieldValue('yesterdayTasks', [...form.values.yesterdayTasks, task]);
-          updateOutput();
-          closeYesterdayTaskModal();
-        }}
+        isToday={false}
       />
 
       <TaskModal
         workDate={form.values.todayDate}
         opened={todayTaskModal}
         onClose={closeTodayTaskModal}
-        onSubmit={(task) => {
-          form.setFieldValue('todayTasks', [...form.values.todayTasks, task]);
-          updateOutput();
-          closeTodayTaskModal();
-        }}
+        isToday={true}
       />
 
       <AbsenceModal
         opened={yesterdayAbsenceModal}
         onClose={closeYesterdayAbsenceModal}
-        absenceType={form.values.yesterdayAbsence?.type ?? AbsenceType.SCHEDULED}
-        setAbsenceType={(type) => {
-          form.setFieldValue('yesterdayAbsence', {
-            type,
-            reason: form.values.yesterdayAbsence?.reason ?? '',
-          });
-        }}
-        absenceReason={form.values.yesterdayAbsence?.reason ?? ''}
-        setAbsenceReason={(reason) => {
-          form.setFieldValue('yesterdayAbsence', {
-            type: form.values.yesterdayAbsence?.type ?? AbsenceType.SCHEDULED,
-            reason,
-          });
-        }}
-        onSubmit={() => {
-          updateOutput();
-          closeYesterdayAbsenceModal();
-        }}
+        isToday={false}
+        initialAbsence={form.values.yesterdayAbsence}
       />
 
       <AbsenceModal
         opened={todayAbsenceModal}
         onClose={closeTodayAbsenceModal}
-        absenceType={form.values.todayAbsence?.type ?? AbsenceType.SCHEDULED}
-        setAbsenceType={(type) => {
-          form.setFieldValue('todayAbsence', {
-            type,
-            reason: form.values.todayAbsence?.reason ?? '',
-          });
-        }}
-        absenceReason={form.values.todayAbsence?.reason ?? ''}
-        setAbsenceReason={(reason) => {
-          form.setFieldValue('todayAbsence', {
-            type: form.values.todayAbsence?.type ?? AbsenceType.SCHEDULED,
-            reason,
-          });
-        }}
-        onSubmit={() => {
-          updateOutput();
-          closeTodayAbsenceModal();
-        }}
+        isToday={true}
+        initialAbsence={form.values.todayAbsence}
       />
     </Stack>
   );

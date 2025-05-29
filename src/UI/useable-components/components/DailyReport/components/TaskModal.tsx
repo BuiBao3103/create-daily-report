@@ -12,17 +12,28 @@ import { useForm } from '@mantine/form';
 import { projects, statuses } from '@/Utils/constants/TaskForm.constants';
 import { Task } from '@/Utils/enums/DailyEnum/TaskForm.types';
 import { useEffect } from 'react';
+import { useDailyReport } from '../context/DailyReportContext';
 
 interface TaskModalProps {
   readonly workDate: Date;
   readonly opened: boolean;
   readonly onClose: () => void;
-  readonly onSubmit: (task: Task) => void;
+  readonly isToday: boolean;
   readonly initialValues?: Task;
   readonly isEdit?: boolean;
+  readonly taskIndex?: number;
 }
 
-export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, isEdit = false }: TaskModalProps) {
+export function TaskModal({ 
+  workDate, 
+  opened, 
+  onClose, 
+  isToday,
+  initialValues, 
+  isEdit = false,
+  taskIndex = 0
+}: TaskModalProps) {
+  const { addTask, editTask } = useDailyReport();
   const form = useForm<Task>({
     initialValues: initialValues || {
       workDate: workDate,
@@ -51,7 +62,13 @@ export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, 
     if (validationResult.hasErrors) {
       return;
     }
-    onSubmit(form.values);
+    
+    if (isEdit && initialValues) {
+      editTask(taskIndex, isToday, form.values);
+    } else {
+      addTask(form.values, isToday);
+    }
+    
     form.reset();
     onClose();
   };
@@ -92,6 +109,7 @@ export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, 
             label="Thời gian dự kiến (giờ)"
             placeholder="Nhập thời gian dự kiến"
             min={0}
+            step={0.5}
             withAsterisk
             {...form.getInputProps('est_time')}
           />
@@ -99,6 +117,7 @@ export function TaskModal({ workDate, opened, onClose, onSubmit, initialValues, 
             label="Thời gian thực tế (giờ)"
             placeholder="Nhập thời gian thực tế"
             min={0}
+            step={0.5}
             {...form.getInputProps('act_time')}
           />
           <Select

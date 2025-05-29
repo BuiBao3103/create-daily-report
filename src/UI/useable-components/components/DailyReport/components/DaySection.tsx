@@ -1,22 +1,22 @@
 import { IconCalendarOff, IconPlus } from '@tabler/icons-react';
 import { Box, Button, Checkbox, Group, Stack } from '@mantine/core';
+import { useDailyReport } from '../context/DailyReportContext';
 
 interface DaySectionProps {
-  readonly waitingForTask?: boolean;
-  readonly onAddTask: () => void;
-  readonly onAddAbsence: () => void;
-  readonly onWaitingForTaskChange?: (checked: boolean) => void;
   readonly label: string;
+  readonly hasAbsence?: boolean;
+  readonly onAddTask?: () => void;
+  readonly onAddAbsence?: () => void;
 }
 
 export function DaySection({
-  waitingForTask,
+  label,
+  hasAbsence,
   onAddTask,
   onAddAbsence,
-  onWaitingForTaskChange,
-  label,
 }: DaySectionProps) {
   const isToday = label === 'Hôm nay';
+  const { form, setWaitingForTask } = useDailyReport();
 
   return (
     <Box>
@@ -36,16 +36,17 @@ export function DaySection({
               size="xs"
               leftSection={<IconCalendarOff size={14} />}
               onClick={onAddAbsence}
+              disabled={hasAbsence}
             >
               Nghỉ
             </Button>
           </Group>
           <Group>
-            {isToday && onWaitingForTaskChange && (
+            {isToday && (
               <Checkbox
                 label="Chờ task"
-                checked={waitingForTask}
-                onChange={(e) => onWaitingForTaskChange(e.currentTarget.checked)}
+                checked={form.values.waitingForTask}
+                onChange={(e) => setWaitingForTask(e.currentTarget.checked)}
               />
             )}
           </Group>
