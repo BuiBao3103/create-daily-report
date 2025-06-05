@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import useTask from '@/hooks/use_tasks';
-import { Task } from '@/interfaces/task.types';
-import { Absence } from '@/interfaces/absence.types';
 import { useQueryClient } from '@tanstack/react-query';
 import useAbsences from '@/hooks/use_absences';
+import useTask from '@/hooks/use_tasks';
+import { Absence } from '@/interfaces/absence.types';
+import { Task } from '@/interfaces/task.types';
 
 export interface DailyReportContextType {
   intern: number | null;
@@ -22,9 +22,6 @@ export interface DailyReportContextType {
   setWaitingForTask: (waiting: boolean) => void;
   setYesterdayDate: (date: string) => void;
   setTodayDate: (date: string) => void;
-  addTask: (task: Task, isToday: boolean) => void;
-  updateTask: (task: Task, isToday: boolean) => void;
-  deleteTask: (id: number, isToday: boolean) => void;
   selectedIntern: number;
   setSelectedIntern: (intern: number) => void;
   workDate: string;
@@ -120,37 +117,19 @@ export function DailyReportProvider({ children }: { readonly children: React.Rea
     setYesterdayDate(formatDate(yesterday));
   }, []);
 
-  const addTask = (_task: Task, isToday: boolean) => {
-    queryClient.invalidateQueries({ 
-      queryKey: ['/api/tasks/', `?intern=${intern}&date=${isToday ? todayDate : yesterdayDate}`]
-    });
-  };
-
-  const updateTask = (_task: Task, isToday: boolean) => {
-    queryClient.invalidateQueries({ 
-      queryKey: ['/api/tasks/', `?intern=${intern}&date=${isToday ? todayDate : yesterdayDate}`]
-    });
-  };
-
-  const deleteTask = (id: number, isToday: boolean) => {
-    queryClient.invalidateQueries({ 
-      queryKey: ['/api/tasks/', `?intern=${intern}&date=${isToday ? todayDate : yesterdayDate}`]
-    });
-  };
-
   // Add effect to refetch tasks when intern or dates change
   useEffect(() => {
     if (intern && yesterdayDate) {
-      queryClient.invalidateQueries({ 
-        queryKey: ['/api/tasks/', `?intern=${intern}&date=${yesterdayDate}`]
+      queryClient.invalidateQueries({
+        queryKey: ['/api/tasks/', `?intern=${intern}&date=${yesterdayDate}`],
       });
     }
   }, [intern, yesterdayDate, queryClient]);
 
   useEffect(() => {
     if (intern && todayDate) {
-      queryClient.invalidateQueries({ 
-        queryKey: ['/api/tasks/', `?intern=${intern}&date=${todayDate}`]
+      queryClient.invalidateQueries({
+        queryKey: ['/api/tasks/', `?intern=${intern}&date=${todayDate}`],
       });
     }
   }, [intern, todayDate, queryClient]);
@@ -179,9 +158,6 @@ export function DailyReportProvider({ children }: { readonly children: React.Rea
       setWaitingForTask,
       setYesterdayDate,
       setTodayDate,
-      addTask,
-      updateTask,
-      deleteTask,
       selectedIntern,
       setSelectedIntern,
       workDate,
@@ -191,7 +167,20 @@ export function DailyReportProvider({ children }: { readonly children: React.Rea
       setYesterdayAbsences,
       setTodayAbsences,
     }),
-    [intern, isIntern, name, waitingForTask, yesterdayDate, todayDate, yesterdayTasks, todayTasks, selectedIntern, workDate, yesterdayAbsences, todayAbsences]
+    [
+      intern,
+      isIntern,
+      name,
+      waitingForTask,
+      yesterdayDate,
+      todayDate,
+      yesterdayTasks,
+      todayTasks,
+      selectedIntern,
+      workDate,
+      yesterdayAbsences,
+      todayAbsences,
+    ]
   );
 
   return <DailyReportContext.Provider value={value}>{children}</DailyReportContext.Provider>;

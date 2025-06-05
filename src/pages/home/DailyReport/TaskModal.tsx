@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { IconCheck, IconRefresh, IconX } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button, Group, Modal, NumberInput, Stack, Text } from '@mantine/core';
-import { IconCheck, IconRefresh, IconX } from '@tabler/icons-react';
 import { useDailyReport } from '@/context/DailyReportContext';
 import { useTaskMutations } from '@/hooks/use_tasks';
 import { Task } from '@/interfaces/task.types';
@@ -32,7 +32,7 @@ export function TaskModal({
   isToday = true,
   onSpecialAction,
 }: TaskModalProps) {
-  const { intern, addTask: addTaskToContext, updateTask: updateTaskInContext } = useDailyReport();
+  const { intern } = useDailyReport();
   const queryClient = useQueryClient();
   const { addTask, updateTask } = useTaskMutations();
   const [specialMode, setSpecialMode] = useState<'done' | 'continue' | null>(null);
@@ -41,18 +41,16 @@ export function TaskModal({
 
   const handleSubmit = async (values: Omit<Task, 'date'>) => {
     const apiPayload = { ...values, date: workDate, intern };
-    
+
     try {
       if (isEdit && initialValues?.id) {
-        const updatedTask = await updateTask.mutateAsync({ ...apiPayload, id: initialValues.id });
-        updateTaskInContext(updatedTask, isToday);
+        await updateTask.mutateAsync({ ...apiPayload, id: initialValues.id });
       } else {
-        const newTask = await addTask.mutateAsync(apiPayload);
-        addTaskToContext(newTask, isToday);
+        await addTask.mutateAsync(apiPayload);
       }
-      
-      await queryClient.refetchQueries({ 
-        queryKey: ['/api/tasks/', `?intern=${intern}&date=${workDate}`]
+
+      await queryClient.refetchQueries({
+        queryKey: ['/api/tasks/', `?intern=${intern}&date=${workDate}`],
       });
       onSubmit();
       onClose();
@@ -130,7 +128,10 @@ export function TaskModal({
                   typeof initialValues.estimate_time === 'number'
                 ) {
                   const newEst = Math.max(1, initialValues.estimate_time - continueActTime);
-                  onSpecialAction('continue', { estimate_time: newEst, actual_time: continueActTime });
+                  onSpecialAction('continue', {
+                    estimate_time: newEst,
+                    actual_time: continueActTime,
+                  });
                   handleClose();
                 }
               }}

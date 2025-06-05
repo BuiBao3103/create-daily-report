@@ -184,7 +184,6 @@ export function DailyReportOutput() {
     } else if (action === 'continue' && typeof value === 'object' && value) {
       await taskMutationsUpdateTask.mutateAsync({
         ...currentTask,
-        estimate_time: value.actual_time,
         actual_time: value.actual_time,
         status: 'Done',
       });
