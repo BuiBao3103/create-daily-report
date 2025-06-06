@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import {
   IconCheck,
   IconClock,
@@ -15,7 +15,6 @@ import {
   Center,
   Group,
   Modal,
-  NumberInput,
   Paper,
   SegmentedControl,
   Stack,
@@ -25,7 +24,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { useDailyReport } from '@/context/DailyReportContext';
-import useAbsences, { useAbsenceMutations } from '@/hooks/use_absences';
+import { useAbsenceMutations } from '@/hooks/use_absences';
 import { useTaskMutations } from '@/hooks/use_tasks';
 import { Absence } from '@/interfaces/absence.types';
 import { AbsenceType } from '@/interfaces/DailyReportForm.types';

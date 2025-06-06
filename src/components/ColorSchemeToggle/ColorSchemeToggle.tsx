@@ -18,7 +18,7 @@ export function ColorSchemeToggle() {
     <Group
       style={{
         position: 'fixed',
-        top: 32,
+        top: 10,
         right: 32,
         zIndex: 2100,
       }}
@@ -30,8 +30,8 @@ export function ColorSchemeToggle() {
           onClick={handleClick}
           size={38}
           style={{
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            background: colorScheme === 'dark' ? '#222' : '#fff',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            background: colorScheme === 'dark' ? '#222' : 'rgba(0, 8, 255, 0.03)',
             transition: 'all 0.3s ease',
           }}
         >

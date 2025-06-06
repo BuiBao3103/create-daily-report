@@ -1,4 +1,4 @@
-import { ActionIcon, Flex, Group, Paper, Table, Text, Tooltip } from '@mantine/core';
+import { ActionIcon, Flex, Paper, Table, Tooltip } from '@mantine/core';
 import { IconEdit, IconTrash } from '@tabler/icons-react';
 import { Task } from '@/interfaces/task.types';
 
