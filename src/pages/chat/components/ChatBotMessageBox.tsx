@@ -3,6 +3,8 @@ import ReactMarkdown from "react-markdown";
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { LoadChatBotLocalSession } from "../store/ChatBotLocalStore";
 import ButtonCopyMessage from "./ButtonCopyMessage";
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 const ChatBotMessageBox = forwardRef((_props, ref) => {
     // state
@@ -53,9 +55,12 @@ const ChatBotMessageBox = forwardRef((_props, ref) => {
                         <ButtonCopyMessage key={i} value={msg.message} ref={(el) => (copyButtonRefs.current[i] = el)} />
                         <TypographyStylesProvider>
                             <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeRaw]}
                                 components={{
                                     p: ({ children }) => <div>{children}</div>,
-                                    ol: ({ children }) => <ol style={{ paddingLeft: "2rem", marginTop: 2, marginBottom: 2 }}>{children}</ol>,
+                                    ul: ({ children }) => <ul style={{ listStyleType: 'disc', marginLeft: "0.5rem" }}>{children}</ul>,
+                                    ol: ({ children }) => <ol style={{ marginLeft: "0.5rem", marginTop: 2, marginBottom: 2 }}>{children}</ol>,
                                     li: ({ children }) => <li style={{ marginBottom: 4 }}>{children}</li>,
                                 }}
                             >

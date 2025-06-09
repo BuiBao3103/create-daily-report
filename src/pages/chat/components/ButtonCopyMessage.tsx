@@ -8,7 +8,6 @@ async function copyPlainMarkdown(markdown: string) {
         .replace(/\*\*(.*?)\*\*/g, "$1")    // bỏ **bold**
         .replace(/\*(.*?)\*/g, "$1")        // bỏ *italic*
         .replace(/\\_/g, "_")              // bỏ escape _
-
     await navigator.clipboard.writeText(cleaned);
 }
 
