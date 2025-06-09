@@ -124,6 +124,7 @@ export default function ChatBotForm({ messageBoxRef }: ChatBoxFormProps) {
             w="100%"
             style={{ backgroundColor: 'var(--mantine-color-body)' }}
             position={{ bottom: 0, left: 0 }}
+            zIndex={99}
         >
             <form onSubmit={handleChatSubmit}>
                 <Flex
