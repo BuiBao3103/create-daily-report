@@ -44,11 +44,13 @@ const ChatBotMessageBox = forwardRef((_props, ref) => {
                         }
                         style={{
                             position: 'relative',
+                            wordBreak: 'break-word',
+                            overflowWrap: 'break-word',
                         }}
                         onMouseEnter={() => copyButtonRefs.current[i]?.setVisible(true)}
                         onMouseLeave={() => copyButtonRefs.current[i]?.setVisible(false)}
                     >
-                        <ButtonCopyMessage key={i} value={msg.message} ref={(el) => (copyButtonRefs.current[i] = el)}/>
+                        <ButtonCopyMessage key={i} value={msg.message} ref={(el) => (copyButtonRefs.current[i] = el)} />
                         <TypographyStylesProvider>
                             <ReactMarkdown
                                 components={{
