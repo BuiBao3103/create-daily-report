@@ -6,7 +6,7 @@ import ButtonGoToChatPage from "./chat/components/ButtonGoToChatPage";
 const Layout = ({ children }: { children: ReactNode }) => {
     return (
         <AppShell p="md">
-            <AppShell.Main>
+            <AppShell.Main mih={0}>
                 <ColorSchemeToggle />
                 <ButtonGoToChatPage />
                 {children}

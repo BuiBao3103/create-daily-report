@@ -18,7 +18,7 @@ export default function ButtonGoToChatPage() {
     }
 
     return (
-        <Affix position={{ top: 10, right: 80 }} zIndex={2000}>
+        <Affix position={{ top: 10, right: 80 }} zIndex={100}>
             {location.pathname === '/chat-ai'
                 ? <ActionIcon
                     variant="light"

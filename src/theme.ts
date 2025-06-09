@@ -1,4 +1,5 @@
-import { createTheme } from '@mantine/core';
+import { createTheme, Loader } from '@mantine/core';
+import { RingLoader } from './components/Loader/RingLoader';
 
 export const theme = createTheme({
   primaryColor: 'blue',
@@ -83,6 +84,12 @@ export const theme = createTheme({
         },
       },
     },
+    Loader: Loader.extend({
+      defaultProps: {
+        loaders: { ...Loader.defaultLoaders, ring: RingLoader },
+        type: 'ring',
+      },
+    }),
   },
   other: {
     gradients: {

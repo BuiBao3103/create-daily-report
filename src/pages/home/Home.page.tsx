@@ -14,7 +14,6 @@ function HomePage() {
     return (
         <Box
             style={{
-                minHeight: '100vh',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',

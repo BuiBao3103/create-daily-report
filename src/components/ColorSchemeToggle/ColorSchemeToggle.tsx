@@ -20,7 +20,7 @@ export function ColorSchemeToggle() {
         position: 'fixed',
         top: 10,
         right: 32,
-        zIndex: 2100,
+        zIndex: 100,
       }}
     >
       {/* Nút đổi giao diện sáng/tối */}
