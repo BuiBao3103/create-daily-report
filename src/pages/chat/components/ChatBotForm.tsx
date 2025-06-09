@@ -30,33 +30,33 @@ export default function ChatBotForm({ messageBoxRef }: ChatBoxFormProps) {
             ChatBotLocalStore_AddMessage(value);
             form.reset();
             // demo loading KHI GẮN API NHỚ BỎ KẺO TỐN THÊM 2 GIÂY
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            return {
-                data: [
-                    {
-                        "text": "# Tiêu đề cấp 1\n\n## Tiêu đề cấp 2\n\n### Tiêu đề cấp 3" +
-                            "\n\n---\n\n**Đây là chữ đậm**\n\n*Đây là chữ nghiêng*\n\n" +
-                            "***Đây là chữ vừa đậm vừa nghiêng***\n\n~~Đây là chữ bị gạch ngang~~\n\n" +
-                            "[Đây là một liên kết](https://example.com)\n\n---\n\n" +
-                            "### 🔢 Danh sách có thứ tự (Ordered List)\n\n" +
-                            "1. Mục số một\n2. Mục số hai\n3. Mục số ba\n   1. Mục con 1\n   2. Mục con 2\n\n---\n\n" +
-                            "### 🔘 Danh sách không thứ tự (Unordered List)\n\n" +
-                            "- Táo\n- Chuối\n- Cam\n  - Cam sành\n  - Cam xoàn\n\n---\n\n" +
-                            "### 📋 Trích dẫn\n\n> Đây là một đoạn trích dẫn.\n> Nó có thể dài nhiều dòng.\n\n" +
-                            "---\n\n### 🧱 Code nội dòng\n\nCâu lệnh `npm install` dùng để cài đặt gói." +
-                            "\n\n---\n\n### 🧩 Khối code (Code block)\n\n```js\nfunction sayHello(name) {\n  console.log(\"Hello, \" + name);\n}\n```" +
-                            "\n\n---\n\n### 📊 Bảng\n\n| Tên   | Tuổi | Nghề nghiệp     |\n|--------|------|----------------|" +
-                            "\n| An     | 25   | Kỹ sư phần mềm |\n| Bình   | 30   | Thiết kế UI/UX |\n| Chi    | 28   | Marketing       |" +
-                            "\n\n---\n\n### 📌 Hình ảnh\n\n![OpenAI Logo](https://storage.googleapis.com/support-kms-prod/5Af3SzwJLJ3lRVhBbtUjZbzPtXuIUj7xzeJw)" +
-                            "\n\n---\n\n### ✅ Task list\n\n- [x] Viết tài liệu\n- [ ] Tạo giao diện\n- [ ] Kiểm thử\n\n---\n\n" +
-                            "### 🔣 HTML trong Markdown\n\n<div style=\"color: red; font-weight: bold;\">Bạn có thể dùng HTML nếu trình phân tích hỗ trợ</div>"
-                    },
-                ]
-            }
-            // return await axios.post('https://930a-210-245-33-111.ngrok-free.app/webhook/daily-report', {
-            //     message: value.message,
-            //     sessionId: ChatBotLocalStore_GetOrCreateSessionId(),
-            // });
+            // await new Promise(resolve => setTimeout(resolve, 2000));
+            // return {
+            //     data: [
+            //         {
+            //             "text": "# Tiêu đề cấp 1\n\n## Tiêu đề cấp 2\n\n### Tiêu đề cấp 3" +
+            //                 "\n\n---\n\n**Đây là chữ đậm**\n\n*Đây là chữ nghiêng*\n\n" +
+            //                 "***Đây là chữ vừa đậm vừa nghiêng***\n\n~~Đây là chữ bị gạch ngang~~\n\n" +
+            //                 "[Đây là một liên kết](https://example.com)\n\n---\n\n" +
+            //                 "### 🔢 Danh sách có thứ tự (Ordered List)\n\n" +
+            //                 "1. Mục số một\n2. Mục số hai\n3. Mục số ba\n   1. Mục con 1\n   2. Mục con 2\n\n---\n\n" +
+            //                 "### 🔘 Danh sách không thứ tự (Unordered List)\n\n" +
+            //                 "- Táo\n- Chuối\n- Cam\n  - Cam sành\n  - Cam xoàn\n\n---\n\n" +
+            //                 "### 📋 Trích dẫn\n\n> Đây là một đoạn trích dẫn.\n> Nó có thể dài nhiều dòng.\n\n" +
+            //                 "---\n\n### 🧱 Code nội dòng\n\nCâu lệnh `npm install` dùng để cài đặt gói." +
+            //                 "\n\n---\n\n### 🧩 Khối code (Code block)\n\n```js\nfunction sayHello(name) {\n  console.log(\"Hello, \" + name);\n}\n```" +
+            //                 "\n\n---\n\n### 📊 Bảng\n\n| Tên   | Tuổi | Nghề nghiệp     |\n|--------|------|----------------|" +
+            //                 "\n| An     | 25   | Kỹ sư phần mềm |\n| Bình   | 30   | Thiết kế UI/UX |\n| Chi    | 28   | Marketing       |" +
+            //                 "\n\n---\n\n### 📌 Hình ảnh\n\n![OpenAI Logo](https://storage.googleapis.com/support-kms-prod/5Af3SzwJLJ3lRVhBbtUjZbzPtXuIUj7xzeJw)" +
+            //                 "\n\n---\n\n### ✅ Task list\n\n- [x] Viết tài liệu\n- [ ] Tạo giao diện\n- [ ] Kiểm thử\n\n---\n\n" +
+            //                 "### 🔣 HTML trong Markdown\n\n<div style=\"color: red; font-weight: bold;\">Bạn có thể dùng HTML nếu trình phân tích hỗ trợ</div>"
+            //         },
+            //     ]
+            // }
+            return await axios.post('https://930a-210-245-33-111.ngrok-free.app/webhook/daily-report', {
+                message: value.message,
+                sessionId: ChatBotLocalStore_GetOrCreateSessionId(),
+            });
         },
         onSuccess: (response) => {
             updateLoading(false);
