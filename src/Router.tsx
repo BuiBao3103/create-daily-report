@@ -1,6 +1,8 @@
 import { Route, Routes } from 'react-router-dom';
 import React, { lazy, Suspense } from 'react';
 import { LoadingOverlay } from '@mantine/core';
+import MyLoader from './components/Loader/MyLoader';
+
 
 // Lazy load pages
 const HomePage = lazy(() => import('./pages/home/Home.page'));
@@ -14,7 +16,7 @@ export function Router() {
                     visible
                     zIndex={1000}
                     overlayProps={{ radius: 'sm', blur: 2 }}
-                    loaderProps={{ color: 'blue', type: 'ring', size: "xl" }}
+                    loaderProps={{ children: <MyLoader />, size: 'xl' }}
                 />
             }
         >
@@ -25,3 +27,23 @@ export function Router() {
         </Suspense>
     );
 }
+
+
+
+
+
+
+
+
+
+
+// loading page simulator
+// const lazyWithDelay = (importFunc: () => Promise<any>, delay: number = 5000) => {
+//     return React.lazy(() =>
+//         new Promise(resolve => {
+//             setTimeout(() => {
+//                 resolve(importFunc());
+//             }, delay);
+//         })
+//     );
+// };

@@ -1,6 +1,5 @@
-import { Group, Paper, Text } from '@mantine/core';
+import { Group, Paper, Text, useMantineColorScheme, useMantineTheme } from '@mantine/core';
 import { Task } from '@/interfaces/task.types';
-import { useMantineTheme, useMantineColorScheme } from '@mantine/core';
 
 interface TaskInfoProps {
   task: Task;
