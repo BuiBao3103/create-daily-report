@@ -1,5 +1,6 @@
 export const projects = [
   'EduEVA',
+  'EduEAQ',
   'EduSTM',
   'EduSTM Mobile',
   // 'EduStudentActivity',
@@ -7,14 +8,16 @@ export const projects = [
   // 'EduCoE',
   // 'EduQMES',
   // 'EduCollege',
-  // 'EduSRM',
+  'EduSRM',
   // 'EduASM',
   // 'EduSchool',
   // 'EduVerification',
   // 'EduDashboard',
   // 'EduKids',
   // 'EduMultichoise',
-  'InternAI',
+  // 'InternAI',
+  'EduSVN',
+  'TM'
 ];
 
 export const statuses = [
@@ -41,6 +44,7 @@ export const interns = [
   { id: 18, full_name: 'Phạm Trần Đình Vũ', uni_code: 'FPT' },
   { id: 19, full_name: 'Đặng Đức Long Quân', uni_code: 'PTIT' },
   { id: 20, full_name: 'Nguyễn Hoàng Phúc', uni_code: 'IU' },
+  { id: 21, full_name: 'Cao Ngọc Anh Tuấn', uni_code: 'IU' },
 ];
 
 export const absenceReasons = [
